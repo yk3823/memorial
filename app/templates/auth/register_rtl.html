@@ -1,0 +1,351 @@
+{% extends "base_rtl.html" %}
+
+{% block title %}הרשמה - {% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-plus display-4 text-primary"></i>
+                    <h2 class="h4 mt-2 hebrew-title">יצירת חשבון חדש</h2>
+                    <p class="text-muted hebrew-text">הצטרף לקהילת ההנצחה שלנו</p>
+                </div>
+                
+                <!-- Email verification notice -->
+                <div class="alert alert-info d-flex align-items-center mb-3" role="alert">
+                    <i class="bi bi-envelope-check fs-4 me-2"></i>
+                    <div>
+                        <strong>שים לב:</strong> לאחר ההרשמה תישלח אליך הודעת אימות לכתובת האימייל שלך. 
+                        יש לאמת את החשבון כדי ליצור אזכרות.
+                    </div>
+                </div>
+
+                <form id="registerForm" class="hebrew-text">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="first_name" class="form-label hebrew-text">שם פרטי</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person"></i>
+                                    </span>
+                                    <input type="text" class="form-control hebrew-input" id="first_name" 
+                                           name="first_name" required placeholder="שם פרטי">
+                                </div>
+                                <div class="invalid-feedback hebrew-text" id="first_name-error"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="last_name" class="form-label hebrew-text">שם משפחה</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person"></i>
+                                    </span>
+                                    <input type="text" class="form-control hebrew-input" id="last_name" 
+                                           name="last_name" required placeholder="שם משפחה">
+                                </div>
+                                <div class="invalid-feedback hebrew-text" id="last_name-error"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="hebrew_name" class="form-label hebrew-text">שם עברי (אופציונלי)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-star-of-david"></i>
+                            </span>
+                            <input type="text" class="form-control hebrew-input" id="hebrew_name" 
+                                   name="hebrew_name" placeholder="שם עברי לאישור פסוקים" 
+                                   dir="rtl">
+                        </div>
+                        <div class="form-text hebrew-text">
+                            <i class="bi bi-info-circle me-1"></i>
+                            שם עברי יעזור לבחור פסוקים מתהילים קיט המתאימים לזכרו
+                        </div>
+                        <div class="invalid-feedback hebrew-text" id="hebrew_name-error"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label hebrew-text">כתובת דוא"ל</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" id="email" name="email" required 
+                                   placeholder="your@email.com" dir="ltr">
+                        </div>
+                        <div class="invalid-feedback hebrew-text" id="email-error"></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password" class="form-label hebrew-text">סיסמה</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control" id="password" 
+                                           name="password" required placeholder="בחר סיסמה חזקה">
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="invalid-feedback hebrew-text" id="password-error"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password_confirm" class="form-label hebrew-text">אישור סיסמה</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </span>
+                                    <input type="password" class="form-control" id="password_confirm" 
+                                           name="password_confirm" required placeholder="חזור על הסיסמה">
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePasswordConfirm">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="invalid-feedback hebrew-text" id="password_confirm-error"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-text hebrew-text">
+                            <small>דרישות סיסמה:</small>
+                            <ul class="small mt-1">
+                                <li>לפחות 8 תווים</li>
+                                <li>אות גדולה ואות קטנה</li>
+                                <li>לפחות ספרה אחת</li>
+                                <li>לפחות תו מיוחד אחד (!@#$%^&*)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                        <label class="form-check-label hebrew-text" for="terms">
+                            אני מסכים ל<a href="/he/terms" target="_blank" class="text-decoration-none">תנאי השימוש</a>
+                            ול<a href="/he/privacy" target="_blank" class="text-decoration-none">מדיניות הפרטיות</a>
+                        </label>
+                        <div class="invalid-feedback hebrew-text" id="terms-error"></div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="newsletter" name="newsletter">
+                        <label class="form-check-label hebrew-text" for="newsletter">
+                            אני מעוניין לקבל עדכונים ותכנים בנושא הנצחה (אופציונלי)
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 hebrew-text" data-loading>
+                        <span class="btn-text">
+                            <i class="bi bi-person-plus me-2"></i>יצירת חשבון
+                        </span>
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-muted mb-0 hebrew-text">יש לך כבר חשבון?</p>
+                    <a href="/he/login" class="btn btn-outline-primary mt-2 hebrew-text">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>התחבר כאן
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.getElementById('registerForm');
+    const togglePassword = document.getElementById('togglePassword');
+    const togglePasswordConfirm = document.getElementById('togglePasswordConfirm');
+    const passwordInput = document.getElementById('password');
+    const passwordConfirmInput = document.getElementById('password_confirm');
+    const hebrewNameInput = document.getElementById('hebrew_name');
+
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        const icon = togglePassword.querySelector('i');
+        icon.className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+    });
+
+    togglePasswordConfirm.addEventListener('click', function() {
+        const type = passwordConfirmInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordConfirmInput.setAttribute('type', type);
+        
+        const icon = togglePasswordConfirm.querySelector('i');
+        icon.className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+    });
+
+    // Hebrew name validation
+    if (hebrewNameInput) {
+        hebrewNameInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            if (value && !HebrewMemorialApp.isHebrewText(value)) {
+                this.classList.add('is-invalid');
+                const errorDiv = document.getElementById('hebrew_name-error');
+                if (errorDiv) {
+                    errorDiv.textContent = 'יש להזין רק אותיות עבריות';
+                }
+            } else {
+                this.classList.remove('is-invalid');
+                const errorDiv = document.getElementById('hebrew_name-error');
+                if (errorDiv) {
+                    errorDiv.textContent = '';
+                }
+            }
+        });
+    }
+
+    // Password confirmation validation
+    passwordConfirmInput.addEventListener('input', function() {
+        if (this.value !== passwordInput.value) {
+            this.classList.add('is-invalid');
+            const errorDiv = document.getElementById('password_confirm-error');
+            if (errorDiv) {
+                errorDiv.textContent = 'הסיסמאות אינן זהות';
+            }
+        } else {
+            this.classList.remove('is-invalid');
+            const errorDiv = document.getElementById('password_confirm-error');
+            if (errorDiv) {
+                errorDiv.textContent = '';
+            }
+        }
+    });
+
+    // Handle form submission
+    registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        console.log('Registration form submitted'); // Debug log
+        
+        const submitBtn = registerForm.querySelector('button[type="submit"]');
+        
+        // Check if HebrewMemorialApp exists
+        if (typeof HebrewMemorialApp !== 'undefined') {
+            HebrewMemorialApp.showLoading(submitBtn, 'יוצר חשבון...');
+        } else {
+            console.error('HebrewMemorialApp not defined');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'יוצר חשבון...';
+        }
+        
+        // Clear previous errors
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        
+        // Validate password confirmation
+        const password = document.getElementById('password').value;
+        const passwordConfirm = document.getElementById('password_confirm').value;
+        
+        if (password !== passwordConfirm) {
+            alert('הסיסמאות אינן זהות');
+            if (typeof HebrewMemorialApp !== 'undefined') {
+                HebrewMemorialApp.hideLoading(submitBtn);
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span class="btn-text"><i class="bi bi-person-plus me-2"></i>יצירת חשבון</span>';
+            }
+            return;
+        }
+
+        const formData = new FormData(registerForm);
+        const registerData = {
+            first_name: formData.get('first_name'),
+            last_name: formData.get('last_name'),
+            hebrew_name: formData.get('hebrew_name') || null,
+            email: formData.get('email'),
+            password: formData.get('password'),
+            confirm_password: formData.get('password_confirm'),
+            phone_number: '+1234567890', // Default phone number
+            newsletter_subscription: formData.has('newsletter')
+        };
+        
+        console.log('Registration data:', registerData); // Debug log
+        
+        try {
+            // Use fetch directly instead of HebrewMemorialApp
+            const response = await fetch('/api/v1/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(registerData)
+            });
+            
+            const result = await response.json();
+            console.log('Registration response:', result); // Debug log
+            
+            if (response.ok) {
+                // Show success modal with email verification notice
+                const successMessage = `
+                    <div class="text-center">
+                        <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                        <h4 class="mt-3">ההרשמה הצליחה!</h4>
+                        <p class="mt-2">שלחנו אליך הודעת אימות לכתובת האימייל שלך.</p>
+                        <p><strong>אנא בדוק את תיבת הדואר שלך ולחץ על הקישור לאימות החשבון.</strong></p>
+                        <p class="text-muted small">לא קיבלת את המייל? בדוק את תיקיית הספאם.</p>
+                    </div>
+                `;
+                
+                // Create and show modal
+                const modalHtml = `
+                    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body p-4">
+                                    ${successMessage}
+                                </div>
+                                <div class="modal-footer border-0">
+                                    <button type="button" class="btn btn-primary" onclick="window.location.href='/he/login?registered=true'">
+                                        המשך לכניסה
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                const modal = new bootstrap.Modal(document.getElementById('successModal'));
+                modal.show();
+                
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = '/he/login?registered=true';
+                }, 5000);
+            } else {
+                console.error('Registration failed:', result);
+                alert('שגיאה ביצירת החשבון: ' + (result.detail || result.message || 'שגיאה לא ידועה'));
+            }
+            
+        } catch (error) {
+            console.error('Registration error:', error);
+            alert('שגיאה ביצירת החשבון. אנא נסה שנית.');
+        } finally {
+            if (typeof HebrewMemorialApp !== 'undefined') {
+                HebrewMemorialApp.hideLoading(submitBtn);
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span class="btn-text"><i class="bi bi-person-plus me-2"></i>יצירת חשבון</span>';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

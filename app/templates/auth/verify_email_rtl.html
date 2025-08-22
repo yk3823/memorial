@@ -1,0 +1,138 @@
+{% extends "base_rtl.html" %}
+
+{% block title %}אימות דוא"ל - {% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    {% if verification_success == True %}
+                        <i class="bi bi-check-circle-fill display-4 text-success"></i>
+                        <h2 class="h4 mt-2 hebrew-title text-success">אימות דוא"ל הושלם בהצלחה!</h2>
+                    {% elif verification_success == False %}
+                        <i class="bi bi-exclamation-triangle-fill display-4 text-danger"></i>
+                        <h2 class="h4 mt-2 hebrew-title text-danger">שגיאה באימות הדוא"ל</h2>
+                    {% else %}
+                        <i class="bi bi-envelope-check display-4 text-primary"></i>
+                        <h2 class="h4 mt-2 hebrew-title">אימות דוא"ל</h2>
+                    {% endif %}
+                </div>
+
+                {% if verification_success == True %}
+                    <!-- Success Message -->
+                    <div class="alert alert-success text-center hebrew-text" role="alert">
+                        <h5>ברוך הבא, {{ user_name }}!</h5>
+                        <p class="mb-3">{{ message }}</p>
+                        <hr>
+                        <p class="mb-0">כעת תוכל לגשת לכל הפונקציות באתר ולהתחיל ליצור דפי הנצחה.</p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        <a href="/he/login" class="btn btn-primary hebrew-text">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            התחבר לחשבון
+                        </a>
+                        <a href="/he" class="btn btn-outline-secondary hebrew-text">
+                            <i class="bi bi-house me-2"></i>
+                            חזור לדף הבית
+                        </a>
+                    </div>
+
+                {% elif verification_success == False %}
+                    <!-- Error Message -->
+                    <div class="alert alert-danger text-center hebrew-text" role="alert">
+                        <h5>לא ניתן לאמת את הדוא"ל</h5>
+                        <p>{{ error }}</p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary hebrew-text" onclick="resendVerification()">
+                            <i class="bi bi-arrow-clockwise me-2"></i>
+                            שלח קישור אימות חדש
+                        </button>
+                        <a href="/he/register" class="btn btn-outline-secondary hebrew-text">
+                            <i class="bi bi-person-plus me-2"></i>
+                            הרשמה מחדש
+                        </a>
+                        <a href="/he" class="btn btn-outline-secondary hebrew-text">
+                            <i class="bi bi-house me-2"></i>
+                            חזור לדף הבית
+                        </a>
+                    </div>
+
+                {% else %}
+                    <!-- No Token Provided -->
+                    <div class="alert alert-warning text-center hebrew-text" role="alert">
+                        <h5>קישור אימות לא תקין</h5>
+                        <p>{{ error }}</p>
+                        <p class="mb-0">אנא ודא שהעתקת את הקישור המלא מהאימייל.</p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        <a href="/he/login" class="btn btn-primary hebrew-text">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            התחברות
+                        </a>
+                        <a href="/he" class="btn btn-outline-secondary hebrew-text">
+                            <i class="bi bi-house me-2"></i>
+                            חזור לדף הבית
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Email Input for Resending Verification -->
+                <div id="resendForm" class="mt-4" style="display: none;">
+                    <hr>
+                    <h6 class="hebrew-text">שלח קישור אימות חדש</h6>
+                    <form onsubmit="sendNewVerification(event)">
+                        <div class="input-group mb-3">
+                            <input type="email" class="form-control hebrew-text" id="resendEmail" 
+                                   placeholder="כתובת הדוא&quot;ל שלך" required>
+                            <button type="submit" class="btn btn-primary hebrew-text">שלח</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function resendVerification() {
+    document.getElementById('resendForm').style.display = 'block';
+}
+
+async function sendNewVerification(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('resendEmail').value;
+    
+    try {
+        const response = await fetch('/api/v1/auth/resend-verification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: email })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('קישור אימות חדש נשלח לכתובת האימייל שלך!');
+            document.getElementById('resendForm').style.display = 'none';
+        } else {
+            alert('שגיאה בשליחת קישור האימות. אנא נסה שוב.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('שגיאה בשליחת קישור האימות. אנא נסה שוב.');
+    }
+}
+</script>
+{% endblock %}

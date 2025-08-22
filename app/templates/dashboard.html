@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Memorial Website{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h3 mb-1">Welcome, {{ current_user.first_name if current_user else 'User' }}</h1>
+                <p class="text-muted mb-0">Manage your memorial pages and remember your loved ones</p>
+            </div>
+            <a href="/memorials/create" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Create Memorial
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title" id="totalMemorials">-</h4>
+                        <p class="card-text">Total Memorials</p>
+                    </div>
+                    <i class="bi bi-person-hearts display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title" id="publicMemorials">-</h4>
+                        <p class="card-text">Public</p>
+                    </div>
+                    <i class="bi bi-globe display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title" id="totalViews">-</h4>
+                        <p class="card-text">Total Views</p>
+                    </div>
+                    <i class="bi bi-eye display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title" id="upcomingYahrzeits">-</h4>
+                        <p class="card-text">Upcoming Yahrzeits</p>
+                    </div>
+                    <i class="bi bi-calendar-heart display-6 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Memorials -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>Recent Memorials
+                </h5>
+                <a href="/memorials" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                <div id="recentMemorialsList">
+                    <div class="text-center py-4">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-calendar-event me-2"></i>Upcoming Yahrzeits
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="upcomingYahrzeitsList">
+                    <div class="text-center py-4">
+                        <div class="spinner-border spinner-border-sm" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightbulb me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/memorials/create" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Create Memorial
+                    </a>
+                    <a href="/search" class="btn btn-outline-secondary">
+                        <i class="bi bi-search me-2"></i>Search Memorials
+                    </a>
+                    <a href="/profile" class="btn btn-outline-secondary">
+                        <i class="bi bi-person me-2"></i>Edit Profile
+                    </a>
+                </div>
+                
+                <hr class="my-3">
+                
+                <h6 class="text-muted">Need Help?</h6>
+                <ul class="list-unstyled small">
+                    <li><a href="/help/getting-started" class="text-decoration-none">
+                        <i class="bi bi-arrow-right me-1"></i>Getting Started Guide
+                    </a></li>
+                    <li><a href="/help/yahrzeit" class="text-decoration-none">
+                        <i class="bi bi-arrow-right me-1"></i>Understanding Yahrzeits
+                    </a></li>
+                    <li><a href="/help/privacy" class="text-decoration-none">
+                        <i class="bi bi-arrow-right me-1"></i>Privacy Settings
+                    </a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+
+    async function loadDashboardData() {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            MemorialApp.showFlash('Please log in to view your dashboard', 'warning');
+            window.location.href = '/login';
+            return;
+        }
+
+        try {
+            // Load memorials list
+            const memorialsResponse = await fetch(`${MemorialApp.API_BASE}/memorials`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (memorialsResponse.ok) {
+                const memorialsData = await memorialsResponse.json();
+                updateStats(memorialsData.items || []);
+                displayRecentMemorials(memorialsData.items?.slice(0, 5) || []);
+                displayUpcomingYahrzeits(memorialsData.items || []);
+            }
+            
+        } catch (error) {
+            console.error('Failed to load dashboard data:', error);
+            MemorialApp.showFlash('Failed to load dashboard data', 'warning');
+        }
+    }
+
+    function updateStats(memorials) {
+        const totalMemorials = memorials.length;
+        const publicMemorials = memorials.filter(m => m.is_public).length;
+        const totalViews = memorials.reduce((sum, m) => sum + (m.page_views || 0), 0);
+        const upcomingYahrzeits = memorials.filter(m => {
+            if (!m.next_yahrzeit_gregorian) return false;
+            const yahrzeit = new Date(m.next_yahrzeit_gregorian);
+            const now = new Date();
+            const diffDays = Math.ceil((yahrzeit - now) / (1000 * 60 * 60 * 24));
+            return diffDays >= 0 && diffDays <= 30;
+        }).length;
+
+        document.getElementById('totalMemorials').textContent = totalMemorials;
+        document.getElementById('publicMemorials').textContent = publicMemorials;
+        document.getElementById('totalViews').textContent = totalViews.toLocaleString();
+        document.getElementById('upcomingYahrzeits').textContent = upcomingYahrzeits;
+    }
+
+    function displayRecentMemorials(memorials) {
+        const container = document.getElementById('recentMemorialsList');
+        
+        if (memorials.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-person-hearts display-4 mb-3"></i>
+                    <p>No memorials created yet</p>
+                    <a href="/memorials/create" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Create Your First Memorial
+                    </a>
+                </div>
+            `;
+            return;
+        }
+
+        const memorialsHtml = memorials.map(memorial => `
+            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                <div class="flex-grow-1">
+                    <h6 class="mb-1">
+                        ${memorial.deceased_name_english || memorial.deceased_name_hebrew || 'Unnamed Memorial'}
+                    </h6>
+                    <small class="text-muted">
+                        <i class="bi bi-calendar me-1"></i>
+                        ${formatDate(memorial.death_date_gregorian)}
+                        ${memorial.is_public ? '<span class="badge bg-success ms-2">Public</span>' : '<span class="badge bg-secondary ms-2">Private</span>'}
+                    </small>
+                </div>
+                <div class="text-end">
+                    <small class="text-muted d-block">${memorial.page_views || 0} views</small>
+                    <div class="btn-group btn-group-sm">
+                        <a href="/memorials/${memorial.id}/edit" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="/memorials/${memorial.unique_slug}/public" class="btn btn-outline-secondary btn-sm" target="_blank">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        container.innerHTML = memorialsHtml;
+    }
+
+    function displayUpcomingYahrzeits(memorials) {
+        const container = document.getElementById('upcomingYahrzeitsList');
+        
+        const upcomingYahrzeits = memorials
+            .filter(memorial => {
+                if (!memorial.next_yahrzeit_gregorian) return false;
+                const yahrzeit = new Date(memorial.next_yahrzeit_gregorian);
+                const now = new Date();
+                const diffDays = Math.ceil((yahrzeit - now) / (1000 * 60 * 60 * 24));
+                return diffDays >= 0 && diffDays <= 60; // Next 2 months
+            })
+            .sort((a, b) => new Date(a.next_yahrzeit_gregorian) - new Date(b.next_yahrzeit_gregorian))
+            .slice(0, 5);
+
+        if (upcomingYahrzeits.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-3 text-muted">
+                    <i class="bi bi-calendar-heart display-6 mb-2"></i>
+                    <p class="small mb-0">No upcoming yahrzeits</p>
+                </div>
+            `;
+            return;
+        }
+
+        const yahrzeitsHtml = upcomingYahrzeits.map(memorial => {
+            const yahrzeit = new Date(memorial.next_yahrzeit_gregorian);
+            const now = new Date();
+            const diffDays = Math.ceil((yahrzeit - now) / (1000 * 60 * 60 * 24));
+            
+            return `
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <div>
+                        <h6 class="mb-0 small">${memorial.deceased_name_english || memorial.deceased_name_hebrew}</h6>
+                        <small class="text-muted">
+                            ${formatDate(memorial.next_yahrzeit_gregorian)}
+                            ${memorial.yahrzeit_date_hebrew ? `<span class="hebrew-text">(${memorial.yahrzeit_date_hebrew})</span>` : ''}
+                        </small>
+                    </div>
+                    <span class="badge ${diffDays <= 7 ? 'bg-warning' : 'bg-info'}">${diffDays} days</span>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = yahrzeitsHtml;
+    }
+
+    function formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString();
+    }
+});
+</script>
+{% endblock %}

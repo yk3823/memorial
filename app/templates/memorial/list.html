@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}My Memorials - Memorial Website{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">My Memorials</h1>
+        <p class="text-muted mb-0">Manage your memorial pages</p>
+    </div>
+    <a href="/memorials/create" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-2"></i>Create New Memorial
+    </a>
+</div>
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form id="searchForm" class="row g-3">
+            <div class="col-md-4">
+                <label for="searchQuery" class="form-label">Search</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="searchQuery" name="query" 
+                           placeholder="Search by name or biography...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="sortBy" class="form-label">Sort By</label>
+                <select class="form-select" id="sortBy" name="sort_by">
+                    <option value="created_at">Date Created</option>
+                    <option value="deceased_name_english">Name (English)</option>
+                    <option value="deceased_name_hebrew">Name (Hebrew)</option>
+                    <option value="death_date_gregorian">Death Date</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="sortOrder" class="form-label">Order</label>
+                <select class="form-select" id="sortOrder" name="sort_order">
+                    <option value="desc">Newest First</option>
+                    <option value="asc">Oldest First</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i>Search
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="clearSearch">
+                        <i class="bi bi-x-circle me-1"></i>Clear
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Memorial Cards -->
+<div id="memorialsList">
+    <div class="row" id="memorialsGrid">
+        <!-- Memorials will be loaded here -->
+    </div>
+    
+    <!-- Loading indicator -->
+    <div id="loadingSpinner" class="text-center py-4">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    
+    <!-- Empty state -->
+    <div id="emptyState" class="text-center py-5 d-none">
+        <i class="bi bi-person-hearts display-1 text-muted mb-3"></i>
+        <h4>No Memorials Found</h4>
+        <p class="text-muted mb-4">You haven't created any memorial pages yet.</p>
+        <a href="/memorials/create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-2"></i>Create Your First Memorial
+        </a>
+    </div>
+</div>
+
+<!-- Pagination -->
+<nav id="pagination" class="mt-4 d-none">
+    <ul class="pagination justify-content-center">
+        <!-- Pagination will be generated here -->
+    </ul>
+</nav>
+
+<!-- Memorial Card Template -->
+<template id="memorialCardTemplate">
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card memorial-card h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title mb-0 memorial-name-english"></h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item edit-memorial" href="#"><i class="bi bi-pencil me-2"></i>Edit</a></li>
+                            <li><a class="dropdown-item view-memorial" href="#" target="_blank"><i class="bi bi-eye me-2"></i>View Public</a></li>
+                            <li><a class="dropdown-item share-memorial" href="#"><i class="bi bi-share me-2"></i>Share</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger delete-memorial" href="#"><i class="bi bi-trash me-2"></i>Delete</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="hebrew-text memorial-name-hebrew text-muted mb-2"></div>
+                
+                <div class="mb-2">
+                    <small class="text-muted">
+                        <i class="bi bi-calendar me-1"></i>
+                        <span class="death-date"></span>
+                    </small>
+                    <span class="badge bg-light text-dark ms-2 visibility-badge"></span>
+                </div>
+                
+                <p class="card-text memorial-biography text-muted small"></p>
+                
+                <div class="row text-center border-top pt-2 mt-auto">
+                    <div class="col-4">
+                        <small class="text-muted d-block">Views</small>
+                        <span class="badge bg-primary memorial-views">0</span>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block">Photos</small>
+                        <span class="badge bg-info memorial-photos">0</span>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block">Days</small>
+                        <span class="badge bg-secondary memorial-days">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPage = 1;
+    let currentQuery = '';
+    let currentFilters = {};
+
+    const memorialsGrid = document.getElementById('memorialsGrid');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const emptyState = document.getElementById('emptyState');
+    const pagination = document.getElementById('pagination');
+    const searchForm = document.getElementById('searchForm');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    const memorialCardTemplate = document.getElementById('memorialCardTemplate');
+
+    // Load memorials on page load
+    loadMemorials();
+
+    // Search form submission
+    searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(searchForm);
+        currentQuery = formData.get('query') || '';
+        currentFilters = {
+            sort_by: formData.get('sort_by'),
+            sort_order: formData.get('sort_order')
+        };
+        currentPage = 1;
+        loadMemorials();
+    });
+
+    // Clear search
+    clearSearchBtn.addEventListener('click', function() {
+        searchForm.reset();
+        currentQuery = '';
+        currentFilters = {};
+        currentPage = 1;
+        loadMemorials();
+    });
+
+    async function loadMemorials(page = 1) {
+        showLoading();
+        
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            MemorialApp.showFlash('Please log in to view your memorials', 'warning');
+            window.location.href = '/login';
+            return;
+        }
+
+        try {
+            // Use search endpoint if query exists, otherwise list endpoint
+            let url = `${MemorialApp.API_BASE}/memorials`;
+            let options = {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            if (currentQuery || Object.keys(currentFilters).length > 0) {
+                url = `${MemorialApp.API_BASE}/memorials/search`;
+                options.method = 'POST';
+                options.body = JSON.stringify({
+                    query: currentQuery,
+                    page: page,
+                    per_page: 12,
+                    ...currentFilters
+                });
+            } else {
+                url += `?skip=${(page - 1) * 12}&limit=12`;
+            }
+
+            const response = await fetch(url, options);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            displayMemorials(data.items || []);
+            updatePagination(data, page);
+            
+        } catch (error) {
+            console.error('Failed to load memorials:', error);
+            MemorialApp.showFlash('Failed to load memorials. Please try again.', 'danger');
+            showEmptyState();
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function displayMemorials(memorials) {
+        memorialsGrid.innerHTML = '';
+        
+        if (memorials.length === 0) {
+            showEmptyState();
+            return;
+        }
+
+        memorials.forEach(memorial => {
+            const card = createMemorialCard(memorial);
+            memorialsGrid.appendChild(card);
+        });
+    }
+
+    function createMemorialCard(memorial) {
+        const template = memorialCardTemplate.content.cloneNode(true);
+        
+        // Set memorial data
+        template.querySelector('.memorial-name-english').textContent = memorial.deceased_name_english || 'No English name';
+        template.querySelector('.memorial-name-hebrew').textContent = memorial.deceased_name_hebrew || 'לא צוין שם עברי';
+        template.querySelector('.death-date').textContent = formatDate(memorial.death_date_gregorian);
+        template.querySelector('.memorial-biography').textContent = truncateText(memorial.biography || 'No biography provided', 100);
+        template.querySelector('.memorial-views').textContent = memorial.page_views || 0;
+        template.querySelector('.memorial-photos').textContent = memorial.photos?.length || 0;
+        template.querySelector('.memorial-days').textContent = daysSinceCreation(memorial.created_at);
+        
+        // Set visibility badge
+        const visibilityBadge = template.querySelector('.visibility-badge');
+        visibilityBadge.textContent = memorial.is_public ? 'Public' : 'Private';
+        visibilityBadge.className = `badge ${memorial.is_public ? 'bg-success' : 'bg-secondary'} ms-2`;
+        
+        // Set action links
+        template.querySelector('.edit-memorial').href = `/memorials/${memorial.id}/edit`;
+        template.querySelector('.view-memorial').href = `/memorials/${memorial.unique_slug}/public`;
+        
+        // Add event listeners
+        template.querySelector('.share-memorial').addEventListener('click', (e) => {
+            e.preventDefault();
+            shareMemorial(memorial);
+        });
+        
+        template.querySelector('.delete-memorial').addEventListener('click', (e) => {
+            e.preventDefault();
+            deleteMemorial(memorial.id, memorial.deceased_name_english || memorial.deceased_name_hebrew);
+        });
+        
+        return template;
+    }
+
+    function formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString();
+    }
+
+    function truncateText(text, maxLength) {
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + '...';
+    }
+
+    function daysSinceCreation(createdAt) {
+        const created = new Date(createdAt);
+        const now = new Date();
+        const diffTime = Math.abs(now - created);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+    }
+
+    function shareMemorial(memorial) {
+        const url = `${window.location.origin}/memorials/${memorial.unique_slug}/public`;
+        if (navigator.share) {
+            navigator.share({
+                title: `Memorial for ${memorial.deceased_name_english || memorial.deceased_name_hebrew}`,
+                text: 'View this memorial page',
+                url: url
+            });
+        } else {
+            // Fallback - copy to clipboard
+            navigator.clipboard.writeText(url).then(() => {
+                MemorialApp.showFlash('Memorial URL copied to clipboard!', 'success');
+            });
+        }
+    }
+
+    async function deleteMemorial(memorialId, memorialName) {
+        if (!confirm(`Are you sure you want to delete the memorial for "${memorialName}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        const token = localStorage.getItem('access_token');
+        try {
+            const response = await fetch(`${MemorialApp.API_BASE}/memorials/${memorialId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                MemorialApp.showFlash('Memorial deleted successfully', 'success');
+                loadMemorials(currentPage);
+            } else {
+                throw new Error('Delete failed');
+            }
+        } catch (error) {
+            MemorialApp.showFlash('Failed to delete memorial. Please try again.', 'danger');
+        }
+    }
+
+    function updatePagination(data, currentPage) {
+        const totalPages = Math.ceil(data.total / (data.limit || 12));
+        
+        if (totalPages <= 1) {
+            pagination.classList.add('d-none');
+            return;
+        }
+
+        pagination.classList.remove('d-none');
+        const paginationList = pagination.querySelector('ul');
+        paginationList.innerHTML = '';
+
+        // Previous button
+        if (currentPage > 1) {
+            paginationList.appendChild(createPaginationItem('Previous', currentPage - 1));
+        }
+
+        // Page numbers
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+            paginationList.appendChild(createPaginationItem(i, i, i === currentPage));
+        }
+
+        // Next button
+        if (currentPage < totalPages) {
+            paginationList.appendChild(createPaginationItem('Next', currentPage + 1));
+        }
+    }
+
+    function createPaginationItem(text, page, active = false) {
+        const li = document.createElement('li');
+        li.className = `page-item ${active ? 'active' : ''}`;
+        
+        const a = document.createElement('a');
+        a.className = 'page-link';
+        a.href = '#';
+        a.textContent = text;
+        a.addEventListener('click', (e) => {
+            e.preventDefault();
+            currentPage = page;
+            loadMemorials(page);
+        });
+        
+        li.appendChild(a);
+        return li;
+    }
+
+    function showLoading() {
+        loadingSpinner.classList.remove('d-none');
+        emptyState.classList.add('d-none');
+        memorialsGrid.innerHTML = '';
+    }
+
+    function hideLoading() {
+        loadingSpinner.classList.add('d-none');
+    }
+
+    function showEmptyState() {
+        emptyState.classList.remove('d-none');
+        pagination.classList.add('d-none');
+    }
+});
+</script>
+{% endblock %}

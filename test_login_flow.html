@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Complete Login Flow</title>
+</head>
+<body>
+    <h1>Test Complete Login Flow</h1>
+    <button id="simulateLogin">Simulate Complete Login</button>
+    <div id="results"></div>
+    
+    <script>
+        document.getElementById('simulateLogin').addEventListener('click', async function() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Starting login simulation...</p>';
+            
+            try {
+                // Step 1: Login via API
+                const loginResponse = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'kolesnikovilj@extraku.net',
+                        password: 'J0seph123!'
+                    })
+                });
+                
+                if (!loginResponse.ok) {
+                    throw new Error(`Login failed: ${loginResponse.status}`);
+                }
+                
+                const loginData = await loginResponse.json();
+                results.innerHTML += '<p>✅ Step 1: API Login successful</p>';
+                
+                // Step 2: Set cookie exactly as the form does with SameSite=Lax
+                document.cookie = `access_token=${loginData.access_token}; path=/; max-age=86400; SameSite=Lax`;
+                results.innerHTML += '<p>✅ Step 2: Cookie set with SameSite=Lax</p>';
+                results.innerHTML += `<p>Cookie: ${document.cookie}</p>`;
+                
+                // Step 3: Wait a moment (simulate the timeout)
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Step 4: Test access to protected route
+                const memorialsResponse = await fetch('/he/memorials', {
+                    credentials: 'include'
+                });
+                
+                results.innerHTML += `<p>Step 4: Protected route test - Status: ${memorialsResponse.status}</p>`;
+                
+                if (memorialsResponse.status === 200) {
+                    results.innerHTML += '<p>🎉 SUCCESS: Authentication flow working!</p>';
+                } else if (memorialsResponse.status === 302) {
+                    results.innerHTML += '<p>❌ FAILED: Still getting 302 redirect</p>';
+                    const location = memorialsResponse.headers.get('Location');
+                    results.innerHTML += `<p>Redirect location: ${location}</p>`;
+                } else {
+                    results.innerHTML += `<p>❌ FAILED: Unexpected status ${memorialsResponse.status}</p>`;
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p>❌ ERROR: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

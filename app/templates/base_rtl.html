@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}אתר הנצחה - {% endblock %}זכר לדורות</title>
+    
+    <!-- Bootstrap CSS with RTL support -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Hebrew fonts from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=David+Libre:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Hebrew RTL CSS -->
+    <link href="/static/css/hebrew_rtl.css" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    
+    <!-- SEO and Social Meta Tags -->
+    <meta name="description" content="{% block description %}אתר הנצחה יהודי עם פסוקי תהילים קיט - צור דפי הנצחה אישיים עם פסוקים המתאימים לשם העברי{% endblock %}">
+    <meta name="keywords" content="הנצחה, זיכרון, תהילים, עברית, יהדות, זכרון, נשמה, קדיש">
+    <meta name="author" content="אתר הנצחה">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{% block og_title %}אתר הנצחה - זכר לדורות{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}אתר הנצחה יהודי עם פסוקי תהילים קיט{% endblock %}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:locale" content="he_IL">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary">
+    <meta property="twitter:title" content="{% block twitter_title %}אתר הנצחה - זכר לדורות{% endblock %}">
+    <meta property="twitter:description" content="{% block twitter_description %}אתר הנצחה יהודי עם פסוקי תהילים קיט{% endblock %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-light hebrew-text">
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand hebrew-title" href="/he">
+                <i class="bi bi-heart-fill me-2"></i>
+                זכר לדורות
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="פתח תפריט ניווט">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'hebrew_index' }}" href="/he">
+                            <i class="bi bi-house-fill me-1"></i>בית
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'hebrew_memorial_create' }}" href="/he/memorial/new">
+                            <i class="bi bi-plus-circle-fill me-1"></i>צור הנצחה
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'hebrew_search' }}" href="/he/search">
+                            <i class="bi bi-search me-1"></i>חיפוש
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'hebrew_alphabet' }}" href="/he/alphabet">
+                            <i class="bi bi-bookmark-fill me-1"></i>אלפבית עברי
+                        </a>
+                    </li>
+                    {% if current_user %}
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'hebrew_memorials' }}" href="/he/my-memorials">
+                            <i class="bi bi-person-hearts me-1"></i>ההנצחות שלי
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <!-- Language Toggle -->
+                <ul class="navbar-nav me-3">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-globe2 me-1"></i>עברית
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ request.path.replace('/he', '') or '/' }}">
+                                <i class="bi bi-flag-usa me-2"></i>English
+                            </a></li>
+                            <li><a class="dropdown-item active" href="/he{{ request.path if not request.path.startswith('/he') else request.path[3:] }}">
+                                <i class="bi bi-flag me-2"></i>עברית
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <!-- User Menu -->
+                <ul class="navbar-nav">
+                    {% if current_user %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i>
+                            {{ current_user.hebrew_name or current_user.first_name or current_user.email }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/he/profile">
+                                <i class="bi bi-person me-2"></i>פרופיל אישי
+                            </a></li>
+                            <li><a class="dropdown-item" href="/he/settings">
+                                <i class="bi bi-gear me-2"></i>הגדרות
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/he/help">
+                                <i class="bi bi-question-circle me-2"></i>עזרה
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="HebrewMemorialApp.logout(); return false;">
+                                <i class="bi bi-box-arrow-right me-2"></i>התנתק
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/he/login">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>התחבר
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/he/register">
+                            <i class="bi bi-person-plus me-1"></i>הרשם
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Email Verification Alert -->
+    {% if current_user and not current_user.is_verified %}
+    <div class="alert alert-warning alert-dismissible fade show m-0 rounded-0 text-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>החשבון שלך טרם אומת.</strong> 
+        אנא בדוק את תיבת הדואר שלך ולחץ על קישור האימות כדי להפעיל את כל התכונות.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% block flash_messages %}
+        <div id="flash-messages" class="hebrew-text">
+            <!-- Flash messages will be handled by JavaScript -->
+        </div>
+        {% endblock %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="container my-4" role="main">
+        {% block content %}
+        <div class="text-center py-5 hebrew-text fade-in-rtl">
+            <h1 class="display-4 hebrew-title mb-4">ברוכים הבאים לאתר ההנצחה</h1>
+            <p class="lead">לכבוד זכרם של יקירינו - עם פסוקי תהילים קיט</p>
+            <div class="mt-4">
+                <a href="/he/memorial/new" class="btn btn-primary btn-lg me-3">
+                    <i class="bi bi-plus-circle me-2"></i>צור הנצחה חדשה
+                </a>
+                <a href="/he/search" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-search me-2"></i>חפש הנצחות
+                </a>
+            </div>
+        </div>
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5 hebrew-text footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="hebrew-title">זכר לדורות</h5>
+                    <p class="small mb-2">אתר הנצחה יהודי עם פסוקי תהילים קיט</p>
+                    <p class="small mb-0 text-muted">
+                        <i class="bi bi-book me-1"></i>
+                        "זכר צדיק לברכה" - משלי י:ז
+                    </p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="mb-2">
+                        <a href="/he/about" class="text-light text-decoration-none me-3">אודות</a>
+                        <a href="/he/privacy" class="text-light text-decoration-none me-3">פרטיות</a>
+                        <a href="/he/terms" class="text-light text-decoration-none me-3">תנאי שימוש</a>
+                        <a href="/he/contact" class="text-light text-decoration-none">צור קשר</a>
+                    </div>
+                    <p class="small mb-0 text-muted">
+                        © {{ current_year or '2024' }} כל הזכויות שמורות
+                    </p>
+                    <p class="small mb-0 text-muted">
+                        נבנה באהבה לזכר יקירינו
+                    </p>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-heart-fill text-danger me-2"></i>
+                        <small class="text-muted">תהילים קיט - הפרק הארוך ביותר בתנ"ך עם 176 פסוקים</small>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <small class="text-muted">
+                        <i class="bi bi-code-slash me-1"></i>
+                        פותח בטכנולוגיות מודרניות עם תמיכה מלאה בעברית RTL
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button type="button" class="btn btn-primary btn-floating position-fixed" id="back-to-top" 
+            style="bottom: 20px; left: 20px; display: none; z-index: 1000;" 
+            title="חזור למעלה">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Global JavaScript with Hebrew support -->
+    <script>
+        // Custom error classes
+        class ValidationError extends Error {
+            constructor(message, validationData) {
+                super(message);
+                this.name = 'ValidationError';
+                this.validationData = validationData;
+            }
+        }
+        
+        // Hebrew Memorial App - Global JavaScript
+        const HebrewMemorialApp = {
+            // API Configuration
+            API_BASE: '/api/v1',
+            
+            // Hebrew validation patterns
+            HEBREW_REGEX: /^[\u0590-\u05FF\s]*$/,
+            HEBREW_LETTERS: /[\u05D0-\u05EA]/g,
+            
+            // Common Hebrew phrases
+            MESSAGES: {
+                loading: 'טוען...',
+                error: 'שגיאה',
+                success: 'בוצע בהצלחה',
+                noResults: 'לא נמצאו תוצאות',
+                invalidName: 'שם לא תקין - יש להזין רק אותיות עבריות',
+                nameRequired: 'יש להזין שם עברי',
+                processingName: 'מעבד את השם העברי...',
+                loadingVerses: 'טוען פסוקים...',
+                versesFound: 'נמצאו פסוקים',
+                noVersesFound: 'לא נמצאו פסוקים לשם זה'
+            },
+            
+            // Utility Functions
+            isHebrewText: function(text) {
+                return this.HEBREW_REGEX.test(text.trim());
+            },
+            
+            getHebrewLetters: function(text) {
+                const matches = text.match(this.HEBREW_LETTERS);
+                return matches ? matches : [];
+            },
+            
+            validateHebrewName: function(name) {
+                if (!name || !name.trim()) {
+                    return { valid: false, message: this.MESSAGES.nameRequired };
+                }
+                
+                if (!this.isHebrewText(name)) {
+                    return { valid: false, message: this.MESSAGES.invalidName };
+                }
+                
+                const letters = this.getHebrewLetters(name);
+                if (letters.length === 0) {
+                    return { valid: false, message: this.MESSAGES.invalidName };
+                }
+                
+                return { valid: true, message: null };
+            },
+            
+            // UI Helper Functions
+            showMessage: function(message, type = 'info', duration = 5000) {
+                const flashContainer = document.getElementById('flash-messages');
+                if (!flashContainer) return;
+                
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show hebrew-text`;
+                alertDiv.setAttribute('role', 'alert');
+                alertDiv.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="סגור הודעה"></button>
+                `;
+                
+                flashContainer.appendChild(alertDiv);
+                
+                // Auto-dismiss
+                if (duration > 0) {
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.remove();
+                        }
+                    }, duration);
+                }
+            },
+            
+            showError: function(message) {
+                this.showMessage(message, 'danger');
+            },
+            
+            showSuccess: function(message) {
+                this.showMessage(message, 'success');
+            },
+            
+            showLoading: function(element, text = null) {
+                if (element.tagName === 'BUTTON') {
+                    element.disabled = true;
+                    const originalText = element.innerHTML;
+                    element.setAttribute('data-original-text', originalText);
+                    element.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        ${text || this.MESSAGES.loading}
+                    `;
+                } else {
+                    element.classList.add('loading-hebrew');
+                }
+            },
+            
+            hideLoading: function(element) {
+                if (element.tagName === 'BUTTON') {
+                    element.disabled = false;
+                    const originalText = element.getAttribute('data-original-text');
+                    if (originalText) {
+                        element.innerHTML = originalText;
+                        element.removeAttribute('data-original-text');
+                    }
+                } else {
+                    element.classList.remove('loading-hebrew');
+                }
+            },
+            
+            // API Helper Functions
+            async apiCall(endpoint, options = {}) {
+                try {
+                    const defaultOptions = {
+                        credentials: 'include', // Include cookies for authentication
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    };
+                    
+                    // Don't set Content-Type for FormData - let browser set it
+                    if (!(options.body instanceof FormData)) {
+                        defaultOptions.headers['Content-Type'] = 'application/json';
+                    }
+                    
+                    const response = await fetch(`${this.API_BASE}${endpoint}`, {
+                        ...defaultOptions,
+                        ...options,
+                        headers: {
+                            ...defaultOptions.headers,
+                            ...(options.headers || {})
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        let errorData = {};
+                        try {
+                            errorData = await response.json();
+                        } catch (e) {
+                            // If response is not JSON, use default error
+                            errorData = { detail: response.statusText };
+                        }
+                        
+                        if (response.status === 422) {
+                            // Handle validation errors with Hebrew messages
+                            throw new ValidationError(errorData.detail || 'שגיאת אימות נתונים', errorData);
+                        }
+                        
+                        const error = new Error(`HTTP ${response.status}: ${errorData.detail || response.statusText}`);
+                        error.status = response.status;
+                        error.response = errorData;
+                        throw error;
+                    }
+                    
+                    return await response.json();
+                } catch (error) {
+                    console.error('API Error:', error);
+                    throw error;
+                }
+            },
+            
+            // Process validation errors and display Hebrew messages
+            handleValidationErrors: function(validationErrors) {
+                const fieldMessages = {
+                    'hebrew_first_name': 'שם פרטי בעברית',
+                    'hebrew_last_name': 'שם משפחה בעברית',
+                    'deceased_name_hebrew': 'שם עברי',
+                    'deceased_name_english': 'שם באנגלית',
+                    'birth_date_gregorian': 'תאריך לידה',
+                    'death_date_gregorian': 'תאריך פטירה',
+                    'birth_date_hebrew': 'תאריך לידה עברי',
+                    'death_date_hebrew': 'תאריך פטירה עברי',
+                    'biography': 'ביוגרפיה',
+                    'memorial_song_url': 'קישור לשיר',
+                    'unique_slug': 'כתובת אישית'
+                };
+                
+                if (Array.isArray(validationErrors)) {
+                    validationErrors.forEach(error => {
+                        const field = error.loc && error.loc.length > 1 ? error.loc[1] : null;
+                        const fieldName = fieldMessages[field] || field || 'שדה';
+                        let message = `${fieldName}: `;
+                        
+                        // Translate common validation messages to Hebrew
+                        if (error.type === 'string_type') {
+                            message += 'יש להזין טקסט תקין';
+                        } else if (error.type === 'date_type') {
+                            message += 'יש להזין תאריך תקין';
+                        } else if (error.type === 'missing') {
+                            message += 'שדה חובה';
+                        } else if (error.type === 'too_short') {
+                            message += 'הטקסט קצר מדי';
+                        } else if (error.type === 'too_long') {
+                            message += 'הטקסט ארוך מדי';
+                        } else if (error.type === 'url_type') {
+                            message += 'יש להזין כתובת אינטרנט תקינה';
+                        } else {
+                            message += error.msg || 'נתון לא תקין';
+                        }
+                        
+                        // Show field-specific error
+                        if (field) {
+                            const input = document.getElementById(field) || document.querySelector(`[name="${field}"]`);
+                            const errorDiv = document.getElementById(`${field}-error`);
+                            
+                            if (input) {
+                                input.classList.add('is-invalid');
+                            }
+                            if (errorDiv) {
+                                errorDiv.textContent = message;
+                            }
+                        }
+                        
+                        // Also show global message
+                        this.showError(message);
+                    });
+                } else {
+                    this.showError('שגיאת אימות נתונים. אנא בדוק את הפרטים שהזנת.');
+                }
+            },
+            
+            // Hebrew name to verses functionality - uses MAIN ENGINE for ALL verses
+            async getVersesForName(hebrewName, options = {}) {
+                // Use the memorial-verses endpoint which returns ALL 8 verses per letter
+                // This is the MAIN ENGINE that provides complete verse sets
+                const params = new URLSearchParams({
+                    name: hebrewName
+                });
+                
+                // Call the memorial-verses endpoint which uses MemorialVerseEngine
+                return await this.apiCall(`/hebrew/memorial-verses?${params}`);
+            },
+            
+            // Format Hebrew date
+            formatHebrewDate: function(hebrewDateObj) {
+                if (!hebrewDateObj) return 'תאריך עברי לא זמין';
+                
+                try {
+                    const { day, month_name, year } = hebrewDateObj;
+                    return `${day} ${month_name} ${year}`;
+                } catch (e) {
+                    return 'תאריך עברי לא זמין';
+                }
+            },
+            
+            // Scroll to top functionality
+            initBackToTop: function() {
+                const backToTopButton = document.getElementById('back-to-top');
+                if (!backToTopButton) return;
+                
+                window.addEventListener('scroll', function() {
+                    if (window.pageYOffset > 100) {
+                        backToTopButton.style.display = 'block';
+                    } else {
+                        backToTopButton.style.display = 'none';
+                    }
+                });
+                
+                backToTopButton.addEventListener('click', function() {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            },
+            
+            // Initialize RTL-specific features
+            initRTL: function() {
+                // Fix Bootstrap dropdown positioning for RTL
+                document.addEventListener('shown.bs.dropdown', function(event) {
+                    const dropdown = event.target.querySelector('.dropdown-menu');
+                    if (dropdown) {
+                        dropdown.style.left = 'auto';
+                        dropdown.style.right = '0';
+                    }
+                });
+                
+                // Add proper focus management for RTL
+                document.querySelectorAll('.form-control').forEach(input => {
+                    if (input.classList.contains('hebrew-input') || input.hasAttribute('dir')) {
+                        input.addEventListener('focus', function() {
+                            this.setAttribute('dir', 'rtl');
+                        });
+                    }
+                });
+            },
+            
+            // Logout functionality
+            async logout() {
+                try {
+                    // Call logout API endpoint
+                    await this.apiCall('/auth/logout', {
+                        method: 'POST'
+                    });
+                } catch (error) {
+                    console.error('Logout API error:', error);
+                    // Continue with logout even if API call fails
+                }
+                
+                // Clear local storage
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                
+                // Show success message and redirect immediately to refresh auth state
+                this.showSuccess('התנתקת בהצלחה');
+                
+                // Immediate redirect to refresh the page and clear server-side auth state
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            }
+        };
+        
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            HebrewMemorialApp.initBackToTop();
+            HebrewMemorialApp.initRTL();
+            
+            // Add fade-in animation to main content
+            const mainContent = document.querySelector('main');
+            if (mainContent) {
+                mainContent.classList.add('fade-in-rtl');
+            }
+            
+            // Initialize tooltips (if needed)
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+            
+            console.log('Hebrew Memorial App initialized successfully');
+        });
+        
+        // Global error handler
+        window.addEventListener('error', function(event) {
+            console.error('Global Error:', event.error);
+            HebrewMemorialApp.showError('אירעה שגיאה בלתי צפויה. אנא נסה שנית.');
+        });
+        
+        // Service Worker cleanup and unregistration
+        if ('serviceWorker' in navigator) {
+            // Unregister all service workers on page load
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                registrations.forEach(function(registration) {
+                    console.log('Unregistering service worker:', registration);
+                    registration.unregister().then(function() {
+                        console.log('Service worker unregistered successfully');
+                    }).catch(function(error) {
+                        console.error('Service worker unregistration failed:', error);
+                    });
+                });
+            });
+        }
+        
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

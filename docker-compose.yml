@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: memorial_postgres
+    environment:
+      POSTGRES_USER: memorial_user
+      POSTGRES_PASSWORD: memorial_pass_123
+      POSTGRES_DB: memorial_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U memorial_user -d memorial_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - memorial_network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: memorial_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@memorial.local
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - memorial_network
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+
+networks:
+  memorial_network:
+    driver: bridge

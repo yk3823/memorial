@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block title %}Create Memorial - Memorial Website{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-person-hearts display-6 me-3"></i>
+                    <div>
+                        <h4 class="mb-0">Create New Memorial</h4>
+                        <small>Honor and remember your loved one</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body p-4">
+                <form id="createMemorialForm">
+                    <!-- Names Section -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-person me-2"></i>Names
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="deceasedNameEnglish" class="form-label">English Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="deceasedNameEnglish" 
+                                           name="deceased_name_english" placeholder="John Doe">
+                                </div>
+                                <div class="invalid-feedback" id="deceased_name_english-error"></div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="deceasedNameHebrew" class="form-label">Hebrew Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text hebrew-text">א</span>
+                                    <input type="text" class="form-control hebrew-text" id="deceasedNameHebrew" 
+                                           name="deceased_name_hebrew" placeholder="יוחנן בן דוד" dir="rtl">
+                                </div>
+                                <div class="invalid-feedback" id="deceased_name_hebrew-error"></div>
+                                <div class="form-text">שם עברי לחישוב יום הפטירה והזכרון</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dates Section -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-calendar me-2"></i>Important Dates
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="birthDate" class="form-label">Birth Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-calendar-heart"></i>
+                                    </span>
+                                    <input type="date" class="form-control" id="birthDate" 
+                                           name="birth_date_gregorian">
+                                </div>
+                                <div class="invalid-feedback" id="birth_date_gregorian-error"></div>
+                                <div class="form-text">Optional: Used for age calculation</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="deathDate" class="form-label">Death Date <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-calendar-x"></i>
+                                    </span>
+                                    <input type="date" class="form-control" id="deathDate" 
+                                           name="death_date_gregorian" required>
+                                </div>
+                                <div class="invalid-feedback" id="death_date_gregorian-error"></div>
+                                <div class="form-text">Required: Used for yahrzeit calculations</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="birthDateHebrew" class="form-label">Hebrew Birth Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text hebrew-text">ת</span>
+                                    <input type="text" class="form-control hebrew-text" id="birthDateHebrew" 
+                                           name="birth_date_hebrew" placeholder="י' בניסן תש״ף" dir="rtl">
+                                </div>
+                                <div class="invalid-feedback" id="birth_date_hebrew-error"></div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="deathDateHebrew" class="form-label">Hebrew Death Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text hebrew-text">ת</span>
+                                    <input type="text" class="form-control hebrew-text" id="deathDateHebrew" 
+                                           name="death_date_hebrew" placeholder="כ״ה באדר תשפ״ד" dir="rtl">
+                                </div>
+                                <div class="invalid-feedback" id="death_date_hebrew-error"></div>
+                                <div class="form-text">יתחשב אוטומטית אם לא יצוין</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Biography Section -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-book me-2"></i>Life Story
+                        </h5>
+                        
+                        <div class="mb-3">
+                            <label for="biography" class="form-label">Biography</label>
+                            <textarea class="form-control" id="biography" name="biography" rows="6"
+                                      placeholder="Share the life story, achievements, and cherished memories of your loved one..."></textarea>
+                            <div class="invalid-feedback" id="biography-error"></div>
+                            <div class="form-text">Share memories, achievements, and what made them special</div>
+                        </div>
+                    </div>
+
+                    <!-- Memorial Settings -->
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2 mb-3">
+                            <i class="bi bi-gear me-2"></i>Memorial Settings
+                        </h5>
+                        
+                        <div class="mb-3">
+                            <label for="memorialSongUrl" class="form-label">Memorial Song/Video URL</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-music-note"></i>
+                                </span>
+                                <input type="url" class="form-control" id="memorialSongUrl" 
+                                       name="memorial_song_url" placeholder="https://youtube.com/watch?v=...">
+                            </div>
+                            <div class="invalid-feedback" id="memorial_song_url-error"></div>
+                            <div class="form-text">Optional: YouTube, Vimeo, or audio file URL</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="isPublic" 
+                                       name="is_public" checked>
+                                <label class="form-check-label" for="isPublic">
+                                    <strong>Make memorial public</strong>
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                Public memorials can be found by anyone and shared. 
+                                Private memorials are only visible to you.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between">
+                        <a href="/memorials" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-2"></i>Cancel
+                        </a>
+                        
+                        <div>
+                            <button type="button" class="btn btn-outline-primary me-2" id="saveDraftBtn">
+                                <i class="bi bi-file-earmark me-2"></i>Save as Draft
+                            </button>
+                            <button type="submit" class="btn btn-primary" data-loading>
+                                <span class="btn-text">
+                                    <i class="bi bi-check-circle me-2"></i>Create Memorial
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-check-circle me-2"></i>Memorial Created Successfully
+                </h5>
+            </div>
+            <div class="modal-body">
+                <p>The memorial has been created successfully!</p>
+                <div class="mb-3">
+                    <label class="form-label">Memorial URL:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="memorialUrl" readonly>
+                        <button class="btn btn-outline-secondary" type="button" id="copyUrlBtn">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="/memorials" class="btn btn-secondary">View All Memorials</a>
+                <button type="button" class="btn btn-primary" id="viewMemorialBtn">View Memorial</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const createMemorialForm = document.getElementById('createMemorialForm');
+    const saveDraftBtn = document.getElementById('saveDraftBtn');
+    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+    const copyUrlBtn = document.getElementById('copyUrlBtn');
+    const viewMemorialBtn = document.getElementById('viewMemorialBtn');
+    
+    let createdMemorial = null;
+
+    // Auto-calculate Hebrew death date when death date changes
+    document.getElementById('deathDate').addEventListener('change', function() {
+        const deathDate = this.value;
+        if (deathDate && !document.getElementById('deathDateHebrew').value) {
+            // In a real implementation, you would call a Hebrew calendar API here
+            console.log('Would calculate Hebrew date for:', deathDate);
+        }
+    });
+
+    // Handle form submission
+    createMemorialForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await submitMemorial(false);
+    });
+
+    // Handle save draft
+    saveDraftBtn.addEventListener('click', async function() {
+        await submitMemorial(true);
+    });
+
+    async function submitMemorial(isDraft = false) {
+        const submitBtn = createMemorialForm.querySelector('button[type="submit"]');
+        const draftBtn = document.getElementById('saveDraftBtn');
+        const activeBtn = isDraft ? draftBtn : submitBtn;
+        
+        MemorialApp.showButtonLoading(activeBtn);
+        
+        // Clear previous errors
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        
+        const formData = new FormData(createMemorialForm);
+        const memorialData = {
+            deceased_name_english: formData.get('deceased_name_english') || null,
+            deceased_name_hebrew: formData.get('deceased_name_hebrew') || null,
+            birth_date_gregorian: formData.get('birth_date_gregorian') || null,
+            birth_date_hebrew: formData.get('birth_date_hebrew') || null,
+            death_date_gregorian: formData.get('death_date_gregorian'),
+            death_date_hebrew: formData.get('death_date_hebrew') || null,
+            biography: formData.get('biography') || null,
+            memorial_song_url: formData.get('memorial_song_url') || null,
+            is_public: formData.has('is_public')
+        };
+
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            MemorialApp.showFlash('Please log in to create a memorial', 'warning');
+            window.location.href = '/login';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${MemorialApp.API_BASE}/memorials`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(memorialData)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                createdMemorial = result.memorial || result;
+                
+                if (isDraft) {
+                    MemorialApp.showFlash('Memorial saved as draft!', 'success');
+                } else {
+                    showSuccessModal();
+                }
+                
+                // Clear form
+                createMemorialForm.reset();
+                
+            } else {
+                // Handle validation errors
+                if (result.detail && typeof result.detail === 'object') {
+                    Object.keys(result.detail).forEach(field => {
+                        const input = document.getElementById(
+                            field === 'deceased_name_english' ? 'deceasedNameEnglish' :
+                            field === 'deceased_name_hebrew' ? 'deceasedNameHebrew' :
+                            field === 'birth_date_gregorian' ? 'birthDate' :
+                            field === 'birth_date_hebrew' ? 'birthDateHebrew' :
+                            field === 'death_date_gregorian' ? 'deathDate' :
+                            field === 'death_date_hebrew' ? 'deathDateHebrew' :
+                            field === 'memorial_song_url' ? 'memorialSongUrl' :
+                            field
+                        );
+                        const errorDiv = document.getElementById(`${field}-error`);
+                        if (input && errorDiv) {
+                            input.classList.add('is-invalid');
+                            errorDiv.textContent = result.detail[field];
+                        }
+                    });
+                } else {
+                    MemorialApp.showFlash(result.detail || 'Failed to create memorial. Please try again.', 'danger');
+                }
+            }
+        } catch (error) {
+            console.error('Memorial creation error:', error);
+            MemorialApp.showFlash('Network error. Please try again.', 'danger');
+        } finally {
+            MemorialApp.hideButtonLoading(activeBtn);
+        }
+    }
+
+    function showSuccessModal() {
+        if (createdMemorial) {
+            const memorialUrl = `${window.location.origin}/memorials/${createdMemorial.unique_slug}/public`;
+            document.getElementById('memorialUrl').value = memorialUrl;
+            
+            // Set up view memorial button
+            viewMemorialBtn.onclick = function() {
+                window.open(memorialUrl, '_blank');
+            };
+            
+            successModal.show();
+        }
+    }
+
+    // Copy URL functionality
+    copyUrlBtn.addEventListener('click', function() {
+        const urlInput = document.getElementById('memorialUrl');
+        urlInput.select();
+        urlInput.setSelectionRange(0, 99999); // For mobile devices
+        
+        navigator.clipboard.writeText(urlInput.value).then(function() {
+            MemorialApp.showFlash('Memorial URL copied to clipboard!', 'success');
+        });
+    });
+
+    // Form validation enhancement
+    document.getElementById('deathDate').addEventListener('input', function() {
+        const today = new Date().toISOString().split('T')[0];
+        if (this.value > today) {
+            this.setCustomValidity('Death date cannot be in the future');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // Character count for biography
+    const biographyTextarea = document.getElementById('biography');
+    const maxLength = 10000;
+    
+    biographyTextarea.addEventListener('input', function() {
+        const remaining = maxLength - this.value.length;
+        let helpText = this.parentNode.querySelector('.form-text');
+        
+        if (remaining < 100) {
+            helpText.innerHTML = `<span class="text-warning">${remaining} characters remaining</span>`;
+        } else {
+            helpText.textContent = 'Share memories, achievements, and what made them special';
+        }
+    });
+});
+</script>
+{% endblock %}

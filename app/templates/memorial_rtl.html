@@ -1,0 +1,711 @@
+{% extends "base_rtl.html" %}
+
+{% block title %}דף הנצחה - {{ memorial.hebrew_name or memorial.name }} - אתר הנצחה{% endblock %}
+{% block description %}דף הנצחה לזכר {{ memorial.hebrew_name or memorial.name }} עם פסוקי תהילים קיט מותאמים אישית{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Memorial-specific styles */
+.memorial-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    padding: 3rem 0;
+    margin-bottom: 2rem;
+}
+
+.memorial-photo {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border: 6px solid rgba(255,255,255,0.8);
+    border-radius: 50%;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+
+.date-hebrew {
+    background: rgba(255,255,255,0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 15px;
+    margin: 0.25rem;
+    display: inline-block;
+}
+
+.verse-number-large {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #3498db;
+    opacity: 0.8;
+}
+
+.print-button {
+    position: fixed;
+    top: 100px;
+    left: 20px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+@media print {
+    .print-button, .navbar, footer, .btn {
+        display: none !important;
+    }
+    
+    .memorial-hero {
+        background: #333 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+    }
+}
+
+.share-buttons {
+    position: fixed;
+    top: 160px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.memorial-stats {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+}
+
+.letter-progression {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.letter-step {
+    background: white;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'David Libre', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #3498db;
+    border: 3px solid #3498db;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    transition: all 0.3s ease;
+}
+
+.letter-step:hover {
+    transform: scale(1.1);
+    background: #3498db;
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Print Button -->
+<button type="button" class="btn btn-primary btn-floating print-button" onclick="window.print()" title="הדפס דף הנצחה">
+    <i class="bi bi-printer-fill"></i>
+</button>
+
+<!-- Share Buttons -->
+<div class="share-buttons">
+    <div class="btn-group-vertical" role="group">
+        <button type="button" class="btn btn-success btn-floating mb-2" onclick="shareMemorial('whatsapp')" title="שתף בווטסאפ">
+            <i class="bi bi-whatsapp"></i>
+        </button>
+        <button type="button" class="btn btn-info btn-floating mb-2" onclick="shareMemorial('facebook')" title="שתף בפייסבוק">
+            <i class="bi bi-facebook"></i>
+        </button>
+        <button type="button" class="btn btn-secondary btn-floating" onclick="copyMemorialLink()" title="העתק קישור">
+            <i class="bi bi-link-45deg"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Memorial Hero Section -->
+<div class="memorial-hero text-center">
+    <div class="container">
+        <div class="row align-items-center justify-content-center">
+            <div class="col-md-4">
+                {% if memorial.photo_url %}
+                <img src="{{ memorial.photo_url }}" alt="תמונת {{ memorial.hebrew_name or memorial.name }}" 
+                     class="memorial-photo mb-3">
+                {% else %}
+                <div class="memorial-photo mb-3 d-flex align-items-center justify-content-center" 
+                     style="background: rgba(255,255,255,0.2);">
+                    <i class="bi bi-person-fill" style="font-size: 4rem;"></i>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-md-8 text-md-start">
+                <h1 class="display-3 hebrew-title mb-3">
+                    {{ memorial.hebrew_name or memorial.name }}
+                </h1>
+                
+                {% if memorial.hebrew_name and memorial.name != memorial.hebrew_name %}
+                <h2 class="h4 mb-4" style="opacity: 0.9;">{{ memorial.name }}</h2>
+                {% endif %}
+                
+                <div class="memorial-dates mb-4">
+                    {% if memorial.birth_date_hebrew %}
+                    <div class="date-hebrew">
+                        <i class="bi bi-calendar-heart me-2"></i>
+                        נולד: {{ memorial.birth_date_hebrew.day }} {{ memorial.birth_date_hebrew.month_name }} {{ memorial.birth_date_hebrew.year }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if memorial.death_date_hebrew %}
+                    <div class="date-hebrew">
+                        <i class="bi bi-calendar-x me-2"></i>
+                        נפטר: {{ memorial.death_date_hebrew.day }} {{ memorial.death_date_hebrew.month_name }} {{ memorial.death_date_hebrew.year }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if memorial.yahrzeit_date_hebrew %}
+                    <div class="date-hebrew">
+                        <i class="bi bi-candle me-2"></i>
+                        יאהרצייט: {{ memorial.yahrzeit_date_hebrew.day }} {{ memorial.yahrzeit_date_hebrew.month_name }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if memorial.description %}
+                <div class="memorial-description">
+                    <p class="lead">{{ memorial.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Memorial Stats -->
+        <div class="memorial-stats">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <div class="hebrew-title text-primary">שם מנוקה</div>
+                    <div class="h5">{{ memorial.normalized_hebrew_name or memorial.hebrew_name or memorial.name }}</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="hebrew-title text-success">אותיות בשם</div>
+                    <div class="h5">{{ memorial.name_letters_count or 0 }}</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="hebrew-title text-info">פסוקי שם</div>
+                    <div class="h5">{{ memorial.name_verses_count or 0 }}</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="hebrew-title text-warning">פסוקי נשמה</div>
+                    <div class="h5">{{ memorial.neshama_verses_count or 4 }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Letter Progression -->
+{% if memorial.name_letter_positions %}
+<div class="container mb-5">
+    <h3 class="text-center hebrew-title mb-4">מסלול האותיות בשם</h3>
+    <div class="letter-progression" id="letterProgression">
+        <!-- Will be populated by JavaScript -->
+    </div>
+</div>
+{% endif %}
+
+<!-- Name Verses Section -->
+{% if memorial.name_verses %}
+<div class="container mb-5">
+    <h2 class="hebrew-title mb-4 text-center">
+        <i class="bi bi-bookmark-star-fill me-2"></i>
+        פסוקי תהילים קיט עבור השם "{{ memorial.hebrew_name or memorial.name }}"
+    </h2>
+    
+    <div class="row">
+        {% for verse in memorial.name_verses %}
+        <div class="col-md-6 mb-4">
+            <div class="verse-container fade-in-rtl" style="animation-delay: {{ loop.index0 * 0.1 }}s;">
+                <div class="verse-header">
+                    <div class="verse-reference">{{ verse.verse_reference }}</div>
+                    <div class="hebrew-letter-indicator">{{ verse.letter.hebrew_letter }}</div>
+                </div>
+                
+                <div class="verse-hebrew-text">
+                    {{ verse.hebrew_text }}
+                </div>
+                
+                <div class="verse-transliteration">
+                    {{ verse.transliteration }}
+                </div>
+                
+                <div class="verse-english">
+                    "{{ verse.english_text }}"
+                </div>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        {{ verse.selection_reason or 'נבחר עבור האות ' + verse.letter.hebrew_letter + ' בשם' }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Neshama Verses Section -->
+{% if memorial.neshama_verses %}
+<div class="container mb-5">
+    <div class="neshama-section">
+        <h2 class="neshama-title text-center">
+            <i class="bi bi-star-fill me-2"></i>
+            פסוקי נשמה מיוחדים
+        </h2>
+        <p class="neshama-subtitle text-center">
+            פסוקים מהאותיות נ-ש-מ-ה לכבוד נשמת {{ memorial.hebrew_name or memorial.name }}
+        </p>
+        
+        <div class="row justify-content-center">
+            {% for verse in memorial.neshama_verses %}
+            <div class="col-md-6 mb-3">
+                <div class="neshama-verse slide-in-rtl" style="animation-delay: {{ loop.index0 * 0.2 }}s;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="verse-reference text-white">{{ verse.verse_reference }}</div>
+                        <div class="hebrew-letter-indicator bg-white text-primary">{{ verse.letter.hebrew_letter }}</div>
+                    </div>
+                    
+                    <div class="verse-hebrew-text bg-white text-dark p-3 rounded mb-2">
+                        {{ verse.hebrew_text }}
+                    </div>
+                    
+                    <div class="verse-transliteration" style="color: rgba(255,255,255,0.9); font-style: italic;">
+                        {{ verse.transliteration }}
+                    </div>
+                    
+                    <div class="verse-english mt-2" style="color: rgba(255,255,255,0.8);">
+                        "{{ verse.english_text }}"
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <p class="text-white" style="opacity: 0.9; font-size: 1.1em;">
+                <i class="bi bi-heart-fill me-2"></i>
+                זכר צדיק לברכה - יהי זכרו ברוך
+            </p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Memorial Details -->
+{% if memorial.birth_story or memorial.life_story or memorial.legacy %}
+<div class="container mb-5">
+    <div class="row">
+        {% if memorial.birth_story %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0 hebrew-title">
+                        <i class="bi bi-sunrise me-2"></i>סיפור הלידה
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ memorial.birth_story }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if memorial.life_story %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0 hebrew-title">
+                        <i class="bi bi-heart me-2"></i>סיפור חיים
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ memorial.life_story }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if memorial.legacy %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="card-title mb-0 hebrew-title">
+                        <i class="bi bi-gem me-2"></i>מורשת
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ memorial.legacy }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Additional Photos Gallery -->
+{% if memorial.additional_photos %}
+<div class="container mb-5">
+    <h3 class="hebrew-title mb-4 text-center">גלריית תמונות</h3>
+    <div class="row">
+        {% for photo in memorial.additional_photos %}
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card border-0 shadow">
+                <img src="{{ photo.url }}" class="card-img-top" alt="{{ photo.description or 'תמונה' }}" 
+                     style="height: 200px; object-fit: cover; cursor: pointer;" 
+                     onclick="showPhotoModal('{{ photo.url }}', '{{ photo.description or '' }}')">
+                {% if photo.description %}
+                <div class="card-body p-2">
+                    <small class="text-muted">{{ photo.description }}</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Memorial Actions -->
+<div class="container mb-5">
+    <div class="card border-0 shadow">
+        <div class="card-body text-center p-4">
+            <h4 class="hebrew-title mb-4">פעולות זכרון</h4>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <button type="button" class="btn btn-primary" onclick="window.print()">
+                            <i class="bi bi-printer me-2"></i>הדפס דף זכרון
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="shareMemorial('whatsapp')">
+                            <i class="bi bi-whatsapp me-2"></i>שתף בווטסאפ
+                        </button>
+                        <button type="button" class="btn btn-info" onclick="downloadPDF()">
+                            <i class="bi bi-file-pdf me-2"></i>הורד PDF
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="lightCandle()">
+                            <i class="bi bi-candle me-2"></i>הדלק נר זכרון
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Virtual Candle Section -->
+<div class="container mb-5" id="virtualCandle" style="display: none;">
+    <div class="card border-warning shadow">
+        <div class="card-body text-center p-4" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white;">
+            <div class="candle-flame mb-3" style="font-size: 4rem; animation: flicker 1.5s ease-in-out infinite alternate;">
+                🕯️
+            </div>
+            <h4 class="hebrew-title mb-2">נר זכרון הודלק</h4>
+            <p class="mb-0">לכבוד זכרו של {{ memorial.hebrew_name or memorial.name }}</p>
+            <small style="opacity: 0.9;" id="candleTime"></small>
+        </div>
+    </div>
+</div>
+
+<!-- Photo Modal -->
+<div class="modal fade" id="photoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title hebrew-title" id="photoModalTitle">תמונה</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="סגור"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid rounded" alt="">
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<style>
+@keyframes flicker {
+    0% { transform: scale(1) rotate(-1deg); }
+    50% { transform: scale(1.05) rotate(1deg); }
+    100% { transform: scale(1) rotate(-1deg); }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Memorial data (would be passed from backend)
+    const memorialData = {
+        id: {{ memorial.id }},
+        name: "{{ memorial.hebrew_name or memorial.name }}",
+        hebrewName: "{{ memorial.hebrew_name or '' }}",
+        normalizedName: "{{ memorial.normalized_hebrew_name or '' }}",
+        letterPositions: {{ memorial.name_letter_positions | tojson if memorial.name_letter_positions else '[]' }},
+        verses: {{ memorial.all_verses | tojson if memorial.all_verses else '[]' }}
+    };
+    
+    // Initialize letter progression
+    initializeLetterProgression();
+    
+    // Initialize animations
+    initializeAnimations();
+    
+    // Initialize letter progression display
+    function initializeLetterProgression() {
+        const progressionContainer = document.getElementById('letterProgression');
+        if (!progressionContainer || !memorialData.letterPositions) return;
+        
+        const hebrewLetters = [
+            "א", "ב", "ג", "ד", "ה", "ו", "ז", "ח", "ט", "י", 
+            "כ", "ל", "מ", "נ", "ס", "ע", "פ", "צ", "ק", "ר", "ש", "ת"
+        ];
+        
+        let html = '';
+        memorialData.letterPositions.forEach((position, index) => {
+            if (position >= 1 && position <= 22) {
+                const letter = hebrewLetters[position - 1];
+                html += `
+                    <div class="letter-step" data-letter="${letter}" data-position="${position}" 
+                         title="אות ${letter} - פסוקים ${(position-1)*8 + 1}-${position*8}">
+                        ${letter}
+                    </div>
+                `;
+            }
+        });
+        
+        progressionContainer.innerHTML = html;
+        
+        // Add click handlers for letter steps
+        document.querySelectorAll('.letter-step').forEach(step => {
+            step.addEventListener('click', function() {
+                const letter = this.dataset.letter;
+                scrollToVerseWithLetter(letter);
+            });
+        });
+    }
+    
+    // Initialize animations
+    function initializeAnimations() {
+        // Animate verse cards on scroll
+        const observeElements = document.querySelectorAll('.verse-container, .neshama-verse');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateX(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        observeElements.forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(30px)';
+            el.style.transition = 'all 0.6s ease';
+            observer.observe(el);
+        });
+    }
+    
+    // Scroll to verse with specific letter
+    function scrollToVerseWithLetter(letter) {
+        const verseContainers = document.querySelectorAll('.verse-container');
+        for (let container of verseContainers) {
+            const letterIndicator = container.querySelector('.hebrew-letter-indicator');
+            if (letterIndicator && letterIndicator.textContent === letter) {
+                container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Highlight the container
+                container.style.background = 'rgba(52, 152, 219, 0.1)';
+                setTimeout(() => {
+                    container.style.background = '';
+                }, 2000);
+                break;
+            }
+        }
+    }
+});
+
+// Share memorial functionality
+function shareMemorial(platform) {
+    const url = window.location.href;
+    const title = `דף הנצחה לזכר ${document.querySelector('.display-3').textContent}`;
+    const description = 'דף הנצחה מיוחד עם פסוקי תהילים קיט';
+    
+    switch(platform) {
+        case 'whatsapp':
+            const whatsappText = encodeURIComponent(`${title}\n\n${description}\n\n${url}`);
+            window.open(`https://wa.me/?text=${whatsappText}`, '_blank');
+            break;
+            
+        case 'facebook':
+            const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&t=${encodeURIComponent(title)}`;
+            window.open(fbUrl, '_blank', 'width=600,height=400');
+            break;
+            
+        default:
+            copyMemorialLink();
+    }
+}
+
+// Copy memorial link
+function copyMemorialLink() {
+    const url = window.location.href;
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+            HebrewMemorialApp.showSuccess('הקישור הועתק ללוח');
+        }).catch(() => {
+            fallbackCopyText(url);
+        });
+    } else {
+        fallbackCopyText(url);
+    }
+}
+
+// Fallback copy function
+function fallbackCopyText(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        document.execCommand('copy');
+        HebrewMemorialApp.showSuccess('הקישור הועתק ללוח');
+    } catch (err) {
+        HebrewMemorialApp.showError('שגיאה בהעתקת הקישור');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// Download PDF functionality
+async function downloadPDF() {
+    try {
+        HebrewMemorialApp.showMessage('מכין קובץ PDF...', 'info');
+        
+        // This would call an API endpoint to generate PDF
+        const response = await fetch(`/api/v1/memorial/${memorialData.id}/pdf`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/pdf'
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `memorial-${memorialData.hebrewName || memorialData.name}.pdf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            HebrewMemorialApp.showSuccess('קובץ PDF הורד בהצלחה');
+        } else {
+            throw new Error('Failed to generate PDF');
+        }
+    } catch (error) {
+        console.error('PDF download error:', error);
+        HebrewMemorialApp.showError('שגיאה בהורדת קובץ PDF. אנא נסה שנית.');
+    }
+}
+
+// Light virtual candle
+function lightCandle() {
+    const candleSection = document.getElementById('virtualCandle');
+    const candleTime = document.getElementById('candleTime');
+    
+    candleSection.style.display = 'block';
+    candleSection.scrollIntoView({ behavior: 'smooth' });
+    
+    // Set candle lighting time
+    const now = new Date();
+    const hebrewTime = now.toLocaleString('he-IL', { 
+        timeZone: 'Asia/Jerusalem',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    candleTime.textContent = `נר הודלק ב-${hebrewTime}`;
+    
+    HebrewMemorialApp.showSuccess('נר הזכרון הודלק בהצלחה');
+    
+    // Auto-hide after 10 seconds unless user is interacting
+    let hideTimer = setTimeout(() => {
+        candleSection.style.display = 'none';
+    }, 10000);
+    
+    candleSection.addEventListener('mouseenter', () => {
+        clearTimeout(hideTimer);
+    });
+    
+    candleSection.addEventListener('mouseleave', () => {
+        hideTimer = setTimeout(() => {
+            candleSection.style.display = 'none';
+        }, 5000);
+    });
+}
+
+// Show photo modal
+function showPhotoModal(imageUrl, description) {
+    const modal = new bootstrap.Modal(document.getElementById('photoModal'));
+    const modalImage = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('photoModalTitle');
+    
+    modalImage.src = imageUrl;
+    modalTitle.textContent = description || 'תמונה';
+    
+    modal.show();
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + P for print
+    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+        e.preventDefault();
+        window.print();
+    }
+    
+    // Esc to close modals or overlays
+    if (e.key === 'Escape') {
+        const candleSection = document.getElementById('virtualCandle');
+        if (candleSection.style.display !== 'none') {
+            candleSection.style.display = 'none';
+        }
+    }
+});
+
+// Auto-scroll to verses if coming from name search
+if (window.location.hash === '#verses') {
+    setTimeout(() => {
+        const versesSection = document.querySelector('.verse-container');
+        if (versesSection) {
+            versesSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, 1000);
+}
+</script>
+{% endblock %}

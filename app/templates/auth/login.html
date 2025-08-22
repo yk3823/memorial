@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Memorial Website{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <i class="bi bi-box-arrow-in-right display-4 text-primary"></i>
+                    <h2 class="h4 mt-2">Login to Your Account</h2>
+                    <p class="text-muted">Access your memorial pages</p>
+                </div>
+
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="invalid-feedback" id="email-error"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback" id="password-error"></div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="rememberMe" name="remember_me">
+                        <label class="form-check-label" for="rememberMe">Remember me</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" data-loading>
+                        <span class="btn-text">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                        </span>
+                    </button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <a href="/forgot-password" class="text-decoration-none">
+                        <i class="bi bi-question-circle me-1"></i>Forgot your password?
+                    </a>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-muted mb-0">Don't have an account?</p>
+                    <a href="/register" class="btn btn-outline-primary mt-2">
+                        <i class="bi bi-person-plus me-2"></i>Create Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        const icon = togglePassword.querySelector('i');
+        icon.className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+    });
+
+    // Handle form submission
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        MemorialApp.showButtonLoading(submitBtn);
+        
+        // Clear previous errors
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        
+        const formData = new FormData(loginForm);
+        const loginData = {
+            email: formData.get('email'),
+            password: formData.get('password'),
+            remember_me: formData.has('remember_me')
+        };
+        
+        try {
+            const response = await fetch(`${MemorialApp.API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(loginData)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                MemorialApp.showFlash('Login successful! Redirecting...', 'success');
+                
+                // Store tokens (in a real app, use secure storage)
+                localStorage.setItem('access_token', result.access_token);
+                localStorage.setItem('refresh_token', result.refresh_token);
+                
+                // Redirect after short delay
+                setTimeout(() => {
+                    window.location.href = '/memorials';
+                }, 1000);
+                
+            } else {
+                // Handle validation errors
+                if (result.detail && typeof result.detail === 'object') {
+                    Object.keys(result.detail).forEach(field => {
+                        const input = document.getElementById(field);
+                        const errorDiv = document.getElementById(`${field}-error`);
+                        if (input && errorDiv) {
+                            input.classList.add('is-invalid');
+                            errorDiv.textContent = result.detail[field];
+                        }
+                    });
+                } else {
+                    MemorialApp.showFlash(result.detail || 'Login failed. Please try again.', 'danger');
+                }
+            }
+        } catch (error) {
+            MemorialApp.showFlash('Network error. Please try again.', 'danger');
+        } finally {
+            MemorialApp.hideButtonLoading(submitBtn);
+        }
+    });
+});
+</script>
+{% endblock %}

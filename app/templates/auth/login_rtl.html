@@ -1,0 +1,124 @@
+{% extends "base_rtl.html" %}
+
+{% block title %}התחברות - {% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <i class="bi bi-box-arrow-in-right display-4 text-primary"></i>
+                    <h2 class="h4 mt-2 hebrew-title">כניסה לחשבון</h2>
+                    <p class="text-muted hebrew-text">גישה לדפי ההנצחה שלך</p>
+                </div>
+
+                {% if error_message %}
+                <div class="alert alert-danger alert-dismissible fade show hebrew-text" role="alert">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                    {{ error_message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="סגור"></button>
+                </div>
+                {% endif %}
+
+                <form id="loginForm" class="hebrew-text" method="post" action="/he/login">
+                    <div class="mb-3">
+                        <label for="email" class="form-label hebrew-text">כתובת דוא"ל</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" id="email" name="email" required 
+                                   placeholder="הזן את כתובת הדוא&quot;ל שלך">
+                        </div>
+                        <div class="invalid-feedback hebrew-text" id="email-error"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label hebrew-text">סיסמה</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password" name="password" required
+                                   placeholder="הזן את הסיסמה שלך">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback hebrew-text" id="password-error"></div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="rememberMe" name="remember_me">
+                        <label class="form-check-label hebrew-text" for="rememberMe">זכור אותי</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 hebrew-text" data-loading>
+                        <span class="btn-text">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>כניסה
+                        </span>
+                    </button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <a href="/he/forgot-password" class="text-decoration-none hebrew-text">
+                        <i class="bi bi-question-circle me-1"></i>שכחת סיסמה?
+                    </a>
+                </div>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-muted mb-0 hebrew-text">אין לך חשבון?</p>
+                    <a href="/he/register" class="btn btn-outline-primary mt-2 hebrew-text">
+                        <i class="bi bi-person-plus me-2"></i>יצירת חשבון
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure HebrewMemorialApp is available
+    if (typeof HebrewMemorialApp === 'undefined') {
+        console.error('HebrewMemorialApp is not defined');
+        return;
+    }
+    
+    const loginForm = document.getElementById('loginForm');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        const icon = togglePassword.querySelector('i');
+        icon.className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+    });
+
+    // Form will submit naturally to /he/login POST endpoint - no JavaScript interference
+    console.log('Login form ready for natural server-side submission');
+    
+    // Auto-dismiss error messages after 10 seconds
+    const errorAlert = document.querySelector('.alert-danger');
+    if (errorAlert) {
+        setTimeout(() => {
+            const alert = new bootstrap.Alert(errorAlert);
+            alert.close();
+        }, 10000);
+    }
+    
+    // Add debug information display in development
+    {% if debug_info %}
+    console.log('Login page debug info:', {{ debug_info | tojson }});
+    {% endif %}
+});
+</script>
+{% endblock %}

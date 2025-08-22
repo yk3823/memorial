@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login Cookie Setting</title>
+</head>
+<body>
+    <h1>Test Cookie Setting</h1>
+    <button id="testLogin">Test Login Process</button>
+    <div id="result"></div>
+    
+    <script>
+        document.getElementById('testLogin').addEventListener('click', async function() {
+            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxODNmZmQyMy1hYjczLTQ4ODMtYTJlNS0zNDc1ZTI2YzU2MDYiLCJleHAiOjE3NTUwMDQ1NTMsImlhdCI6MTc1NDkxODE1MywianRpIjoiNGFjZjY1MDUtYWJmZS00YTIwLTk1MmItNzc5NjJkODhjNjIxIiwidHlwZSI6ImFjY2VzcyJ9.zaQ_lHDd0AdZetjoVjfa3jtWFc4jdyhx-C72E9XOpzg';
+            
+            // Set cookie exactly as the login form does
+            document.cookie = `access_token=${token}; path=/; max-age=86400; SameSite=Strict`;
+            
+            console.log('Cookie set, current cookies:', document.cookie);
+            
+            // Test access to memorials
+            try {
+                const response = await fetch('/he/memorials');
+                document.getElementById('result').innerHTML = `
+                    <p>Response Status: ${response.status}</p>
+                    <p>Response Headers: ${JSON.stringify([...response.headers.entries()])}</p>
+                    <p>Current Cookies: ${document.cookie}</p>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

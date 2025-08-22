@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Memorial Website{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-plus display-4 text-primary"></i>
+                    <h2 class="h4 mt-2">Create Your Account</h2>
+                    <p class="text-muted">Join us to create memorial pages for your loved ones</p>
+                </div>
+
+                <form id="registerForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" class="form-control" id="firstName" name="first_name" required>
+                            </div>
+                            <div class="invalid-feedback" id="first_name-error"></div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" class="form-control" id="lastName" name="last_name" required>
+                            </div>
+                            <div class="invalid-feedback" id="last_name-error"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="invalid-feedback" id="email-error"></div>
+                        <div class="form-text">We'll send you a verification email</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phoneNumber" class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-telephone"></i>
+                            </span>
+                            <input type="tel" class="form-control" id="phoneNumber" name="phone_number" 
+                                   placeholder="+1234567890">
+                        </div>
+                        <div class="invalid-feedback" id="phone_number-error"></div>
+                        <div class="form-text">Optional: For notifications about memorials</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback" id="password-error"></div>
+                        <div class="form-text">
+                            <small>Password must be at least 8 characters with uppercase, lowercase, number, and special character</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock-fill"></i>
+                            </span>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirm_password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback" id="confirm_password-error"></div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="termsAccepted" required>
+                        <label class="form-check-label" for="termsAccepted">
+                            I agree to the <a href="/terms" target="_blank">Terms of Service</a> 
+                            and <a href="/privacy" target="_blank">Privacy Policy</a>
+                        </label>
+                        <div class="invalid-feedback">You must accept the terms to register</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" data-loading>
+                        <span class="btn-text">
+                            <i class="bi bi-person-plus me-2"></i>Create Account
+                        </span>
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-muted mb-0">Already have an account?</p>
+                    <a href="/login" class="btn btn-outline-primary mt-2">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.getElementById('registerForm');
+    const togglePassword = document.getElementById('togglePassword');
+    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        const icon = togglePassword.querySelector('i');
+        icon.className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+    });
+
+    // Toggle confirm password visibility
+    toggleConfirmPassword.addEventListener('click', function() {
+        const type = confirmPasswordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        confirmPasswordInput.setAttribute('type', type);
+        
+        const icon = toggleConfirmPassword.querySelector('i');
+        icon.className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+    });
+
+    // Password confirmation validation
+    confirmPasswordInput.addEventListener('input', function() {
+        if (passwordInput.value !== confirmPasswordInput.value) {
+            confirmPasswordInput.setCustomValidity('Passwords do not match');
+        } else {
+            confirmPasswordInput.setCustomValidity('');
+        }
+    });
+
+    // Handle form submission
+    registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = registerForm.querySelector('button[type="submit"]');
+        MemorialApp.showButtonLoading(submitBtn);
+        
+        // Clear previous errors
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        
+        // Validate passwords match
+        if (passwordInput.value !== confirmPasswordInput.value) {
+            confirmPasswordInput.classList.add('is-invalid');
+            document.getElementById('confirm_password-error').textContent = 'Passwords do not match';
+            MemorialApp.hideButtonLoading(submitBtn);
+            return;
+        }
+        
+        const formData = new FormData(registerForm);
+        const registerData = {
+            first_name: formData.get('first_name'),
+            last_name: formData.get('last_name'),
+            email: formData.get('email'),
+            phone_number: formData.get('phone_number') || null,
+            password: formData.get('password'),
+            confirm_password: formData.get('confirm_password')
+        };
+        
+        try {
+            const response = await fetch(`${MemorialApp.API_BASE}/auth/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(registerData)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                MemorialApp.showFlash(
+                    'Registration successful! Please check your email to verify your account before logging in.', 
+                    'success'
+                );
+                
+                // Clear form
+                registerForm.reset();
+                
+                // Redirect to login after delay
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 3000);
+                
+            } else {
+                // Handle validation errors
+                if (result.detail && typeof result.detail === 'object') {
+                    Object.keys(result.detail).forEach(field => {
+                        const input = document.getElementById(field === 'first_name' ? 'firstName' : 
+                                                            field === 'last_name' ? 'lastName' :
+                                                            field === 'phone_number' ? 'phoneNumber' :
+                                                            field === 'confirm_password' ? 'confirmPassword' : field);
+                        const errorDiv = document.getElementById(`${field}-error`);
+                        if (input && errorDiv) {
+                            input.classList.add('is-invalid');
+                            errorDiv.textContent = result.detail[field];
+                        }
+                    });
+                } else {
+                    MemorialApp.showFlash(result.detail || 'Registration failed. Please try again.', 'danger');
+                }
+            }
+        } catch (error) {
+            MemorialApp.showFlash('Network error. Please try again.', 'danger');
+        } finally {
+            MemorialApp.hideButtonLoading(submitBtn);
+        }
+    });
+});
+</script>
+{% endblock %}

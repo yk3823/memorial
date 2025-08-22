@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Memorial Website{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Hebrew fonts support -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .hebrew-text {
+            font-family: 'Noto Sans Hebrew', Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .memorial-card {
+            transition: transform 0.2s;
+        }
+        
+        .memorial-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+        }
+        
+        .alert-dismissible {
+            position: relative;
+        }
+        
+        .loading-spinner {
+            display: none;
+        }
+        
+        .btn-loading .loading-spinner {
+            display: inline-block;
+        }
+        
+        .btn-loading .btn-text {
+            display: none;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-heart-fill me-2"></i>
+                Memorial Website
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="bi bi-house me-1"></i>Home
+                        </a>
+                    </li>
+                    {% if current_user %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/memorials">
+                            <i class="bi bi-person-hearts me-1"></i>My Memorials
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/memorials/create">
+                            <i class="bi bi-plus-circle me-1"></i>Create Memorial
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/search">
+                            <i class="bi bi-search me-1"></i>Search
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if current_user %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle me-1"></i>
+                            {{ current_user.first_name or current_user.email }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/profile">
+                                <i class="bi bi-person me-2"></i>Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="/settings">
+                                <i class="bi bi-gear me-2"></i>Settings
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="MemorialApp.logout(); return false;">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/register">
+                            <i class="bi bi-person-plus me-1"></i>Register
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% block flash_messages %}
+        <div id="flash-messages">
+            <!-- Flash messages will be inserted here by JavaScript -->
+        </div>
+        {% endblock %}
+    </div>
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        {% block content %}
+        <div class="text-center py-5">
+            <h1>Welcome to Memorial Website</h1>
+            <p class="lead">Honor and remember your loved ones</p>
+        </div>
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Memorial Website</h5>
+                    <p class="small mb-0">Preserving memories, honoring lives</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="small mb-0">
+                        © {{ current_year or '2024' }} Memorial Website. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Global JavaScript -->
+    <script>
+        // Global utilities
+        const MemorialApp = {
+            // API base URL
+            API_BASE: '/api/v1',
+            
+            // Get CSRF token from meta tag
+            getCSRFToken: function() {
+                const token = document.querySelector('meta[name="csrf-token"]');
+                return token ? token.getAttribute('content') : '';
+            },
+            
+            // Show loading state on button
+            showButtonLoading: function(button, loadingText = 'Loading...') {
+                button.classList.add('btn-loading');
+                button.disabled = true;
+                const spinner = button.querySelector('.loading-spinner');
+                if (spinner) {
+                    spinner.style.display = 'inline-block';
+                }
+            },
+            
+            // Hide loading state on button
+            hideButtonLoading: function(button) {
+                button.classList.remove('btn-loading');
+                button.disabled = false;
+                const spinner = button.querySelector('.loading-spinner');
+                if (spinner) {
+                    spinner.style.display = 'none';
+                }
+            },
+            
+            // Show flash message
+            showFlash: function(message, type = 'info') {
+                const flashContainer = document.getElementById('flash-messages');
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                alertDiv.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                flashContainer.appendChild(alertDiv);
+                
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 5000);
+            },
+            
+            // Format Hebrew date
+            formatHebrewDate: function(hebrewDate) {
+                return hebrewDate || 'Hebrew date not available';
+            },
+            
+            // Validate Hebrew text
+            isHebrewText: function(text) {
+                const hebrewRegex = /[\u0590-\u05FF]/;
+                return hebrewRegex.test(text);
+            },
+            
+            // Logout functionality
+            async logout() {
+                try {
+                    // Call logout API endpoint
+                    const response = await fetch('/api/v1/auth/logout', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                } catch (error) {
+                    console.error('Logout API error:', error);
+                    // Continue with logout even if API call fails
+                }
+                
+                // Clear local storage
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                
+                // Show success message and redirect immediately to refresh auth state
+                this.showFlash('Logged out successfully', 'success');
+                
+                // Immediate redirect to refresh the page and clear server-side auth state
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            }
+        };
+        
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add loading spinners to all buttons with data-loading attribute
+            document.querySelectorAll('button[data-loading]').forEach(button => {
+                const spinner = document.createElement('span');
+                spinner.className = 'loading-spinner spinner-border spinner-border-sm me-2';
+                spinner.setAttribute('role', 'status');
+                button.insertBefore(spinner, button.firstChild);
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

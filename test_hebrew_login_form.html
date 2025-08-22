@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test Hebrew Login Form</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h2>Testing Hebrew Login Form</h2>
+    <div id="result"></div>
+    
+    <script>
+    async function testHebrewLogin() {
+        try {
+            const response = await fetch('/api/v1/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: 'shaktee@maxseeding.vn',
+                    password: 'Keren@3823',
+                    remember_me: true
+                }),
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            console.log('Login response:', data);
+            
+            document.getElementById('result').innerHTML = `
+                <h3>Login Test Results:</h3>
+                <p><strong>Status:</strong> ${response.status}</p>
+                <p><strong>Success:</strong> ${data.success}</p>
+                <p><strong>Message:</strong> ${data.message}</p>
+                <p><strong>User Email:</strong> ${data.user ? data.user.email : 'N/A'}</p>
+                <p><strong>Hebrew Name:</strong> ${data.user ? data.user.hebrew_name : 'N/A'}</p>
+                <p><strong>Is Verified:</strong> ${data.user ? data.user.is_verified : 'N/A'}</p>
+                <p><strong>Token Present:</strong> ${data.access_token ? 'Yes' : 'No'}</p>
+                
+                <h4>Now testing protected route access...</h4>
+                <div id="protected-result">Loading...</div>
+            `;
+            
+            if (data.success && data.access_token) {
+                // Test protected route
+                const protectedResponse = await fetch('/api/v1/auth/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${data.access_token}`,
+                        'Accept': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                const protectedData = await protectedResponse.json();
+                
+                document.getElementById('protected-result').innerHTML = `
+                    <p><strong>Protected Route Status:</strong> ${protectedResponse.status}</p>
+                    <p><strong>Protected Route Success:</strong> ${protectedData.success}</p>
+                    <p><strong>User Data Retrieved:</strong> ${protectedData.user ? 'Yes' : 'No'}</p>
+                `;
+                
+                // Test Hebrew dashboard redirect
+                setTimeout(() => {
+                    window.location.href = '/he/dashboard';
+                }, 2000);
+            }
+            
+        } catch (error) {
+            console.error('Login test error:', error);
+            document.getElementById('result').innerHTML = `
+                <h3>Login Test Error:</h3>
+                <p style="color: red;">${error.message}</p>
+            `;
+        }
+    }
+    
+    // Run test on page load
+    document.addEventListener('DOMContentLoaded', testHebrewLogin);
+    </script>
+</body>
+</html>

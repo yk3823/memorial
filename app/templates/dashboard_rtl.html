@@ -1,0 +1,356 @@
+{% extends "base_rtl.html" %}
+
+{% block title %}לוח הבקרה - {% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 bg-gradient-primary text-white">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="hebrew-title mb-2">
+                                שלום {{ current_user.hebrew_name or current_user.first_name }}
+                            </h1>
+                            <p class="lead mb-0 hebrew-text">
+                                ברוכים הבאים למרכז הנצחה אישי שלכם עם פסוקי תהילים קיט
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="bi bi-heart-fill display-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-heart-fill display-4 mb-2"></i>
+                    <h3 class="hebrew-title" id="totalMemorials">-</h3>
+                    <p class="hebrew-text mb-0">סה״כ הנצחות</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-globe display-4 mb-2"></i>
+                    <h3 class="hebrew-title" id="publicMemorials">-</h3>
+                    <p class="hebrew-text mb-0">הנצחות ציבוריות</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-eye-fill display-4 mb-2"></i>
+                    <h3 class="hebrew-title" id="totalViews">-</h3>
+                    <p class="hebrew-text mb-0">סה״כ צפיות</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-book-fill display-4 mb-2"></i>
+                    <h3 class="hebrew-title" id="totalVerses">-</h3>
+                    <p class="hebrew-text mb-0">פסוקי תהילים</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title hebrew-title mb-0">
+                        <i class="bi bi-lightning-charge me-2"></i>פעולות מהירות
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="/he/memorial/new" class="btn btn-primary btn-lg w-100 hebrew-text">
+                                <i class="bi bi-plus-circle-fill me-2"></i>
+                                צור הנצחה חדשה
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="/he/memorials" class="btn btn-outline-secondary btn-lg w-100 hebrew-text">
+                                <i class="bi bi-list me-2"></i>
+                                נהל הנצחות
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="/he/search" class="btn btn-outline-info btn-lg w-100 hebrew-text">
+                                <i class="bi bi-search me-2"></i>
+                                חפש הנצחות
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="/he/alphabet" class="btn btn-outline-success btn-lg w-100 hebrew-text">
+                                <i class="bi bi-bookmark-star me-2"></i>
+                                אלפבית עברי
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity and Recent Memorials -->
+    <div class="row">
+        <!-- Recent Memorials -->
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title hebrew-title mb-0">
+                        <i class="bi bi-clock-history me-2"></i>הנצחות אחרונות
+                    </h3>
+                    <a href="/he/memorials" class="btn btn-outline-primary btn-sm hebrew-text">
+                        <i class="bi bi-arrow-left me-1"></i>צפה בהכל
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div id="recentMemorials">
+                        <!-- Recent memorials will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Feed -->
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h3 class="card-title hebrew-title mb-0">
+                        <i class="bi bi-activity me-2"></i>פעילות אחרונה
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div id="activityFeed">
+                        <!-- Activity feed will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title hebrew-title mb-0">
+                        <i class="bi bi-star-fill me-2"></i>תהילים קיט - הפרק הארוך ביותר בתנ״ך
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p class="hebrew-text lead">
+                                תהילים קיט הוא הפרק הארוך ביותר בתנ״ך עם 176 פסוקים המחולקים ל-22 קטעים, 
+                                אחד לכל אות בא״ב העברי. כל קטע מכיל 8 פסוקים המתחילים באותה אות עברית.
+                            </p>
+                            <p class="hebrew-text">
+                                במערכת שלנו, אנו בוחרים פסוקים מתאימים לשם העברי של הנפטר - 
+                                כל אות בשם מובילה לפסוקים המתחילים באותה אות, 
+                                ובנוסף פסוקי ״נשמה״ מיוחדים לעילוי הנשמה.
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="p-4">
+                                <i class="bi bi-book display-1 text-primary"></i>
+                                <h4 class="hebrew-title mt-3">176 פסוקים</h4>
+                                <p class="hebrew-text text-muted">22 אותיות × 8 פסוקים</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadDashboardData();
+
+    async function loadDashboardData() {
+        try {
+            // Load dashboard stats
+            const statsResponse = await HebrewMemorialApp.apiCall('/dashboard/stats');
+            updateStats(statsResponse);
+
+            // Load recent memorials
+            const memorialsResponse = await HebrewMemorialApp.apiCall('/memorials/my?limit=3');
+            displayRecentMemorials(memorialsResponse.memorials);
+
+            // Load activity feed
+            const activityResponse = await HebrewMemorialApp.apiCall('/dashboard/activity');
+            displayActivityFeed(activityResponse.activities);
+
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+            HebrewMemorialApp.showError('שגיאה בטעינת נתוני הלוח. אנא רענן את הדף.');
+        }
+    }
+
+    function updateStats(stats) {
+        document.getElementById('totalMemorials').textContent = stats.total_memorials || 0;
+        document.getElementById('publicMemorials').textContent = stats.public_memorials || 0;
+        document.getElementById('totalViews').textContent = (stats.total_views || 0).toLocaleString('he-IL');
+        document.getElementById('totalVerses').textContent = stats.total_verses || 0;
+    }
+
+    function displayRecentMemorials(memorials) {
+        const container = document.getElementById('recentMemorials');
+        
+        if (!memorials || memorials.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="bi bi-heart display-4 text-muted"></i>
+                    <h5 class="hebrew-title mt-3">אין הנצחות עדיין</h5>
+                    <p class="hebrew-text text-muted">צור את ההנצחה הראשונה שלך</p>
+                    <a href="/he/memorial/new" class="btn btn-primary hebrew-text">
+                        <i class="bi bi-plus-circle me-2"></i>צור הנצחה
+                    </a>
+                </div>
+            `;
+            return;
+        }
+
+        const memorialsHtml = memorials.map(memorial => `
+            <div class="d-flex align-items-center p-3 border rounded mb-3">
+                <div class="me-3">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                         style="width: 50px; height: 50px;">
+                        <i class="bi bi-heart-fill"></i>
+                    </div>
+                </div>
+                <div class="flex-grow-1">
+                    <h6 class="hebrew-title mb-1">${memorial.deceased_name_hebrew}</h6>
+                    <p class="hebrew-text text-muted mb-1 small">
+                        ${memorial.death_date_hebrew || (memorial.death_date_gregorian ? 
+                            new Date(memorial.death_date_gregorian).toLocaleDateString('he-IL') : 
+                            'תאריך לא זמין')}
+                    </p>
+                    <div class="d-flex align-items-center">
+                        <span class="badge ${memorial.is_public ? 'bg-success' : 'bg-secondary'} me-2">
+                            <i class="bi bi-${memorial.is_public ? 'globe' : 'lock'} me-1"></i>
+                            ${memorial.is_public ? 'ציבורי' : 'פרטי'}
+                        </span>
+                        <small class="text-muted">
+                            <i class="bi bi-eye me-1"></i>${memorial.page_views || 0} צפיות
+                        </small>
+                    </div>
+                </div>
+                <div>
+                    <a href="/he/memorials/${memorial.id}" class="btn btn-outline-primary btn-sm hebrew-text">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                </div>
+            </div>
+        `).join('');
+
+        container.innerHTML = memorialsHtml;
+    }
+
+    function displayActivityFeed(activities) {
+        const container = document.getElementById('activityFeed');
+        
+        if (!activities || activities.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="bi bi-activity display-4 text-muted"></i>
+                    <h6 class="hebrew-title mt-3">אין פעילות עדיין</h6>
+                    <p class="hebrew-text text-muted small">הפעילות שלך תופיע כאן</p>
+                </div>
+            `;
+            return;
+        }
+
+        const activitiesHtml = activities.map(activity => {
+            const timeAgo = getTimeAgo(activity.timestamp);
+            const icon = getActivityIcon(activity.type);
+            const message = getActivityMessage(activity);
+
+            return `
+                <div class="d-flex align-items-start mb-3">
+                    <div class="me-3">
+                        <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" 
+                             style="width: 40px; height: 40px;">
+                            <i class="bi bi-${icon} text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <p class="hebrew-text mb-1 small">${message}</p>
+                        <small class="text-muted">${timeAgo}</small>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = activitiesHtml;
+    }
+
+    function getActivityIcon(type) {
+        const icons = {
+            'memorial_created': 'plus-circle',
+            'memorial_updated': 'pencil',
+            'memorial_viewed': 'eye',
+            'verse_selected': 'book',
+            'profile_updated': 'person-gear',
+            'login': 'box-arrow-in-right'
+        };
+        return icons[type] || 'activity';
+    }
+
+    function getActivityMessage(activity) {
+        const messages = {
+            'memorial_created': `יצרת הנצחה חדשה: ${activity.memorial_name}`,
+            'memorial_updated': `עדכנת את הנצחת ${activity.memorial_name}`,
+            'memorial_viewed': `צפו בהנצחת ${activity.memorial_name}`,
+            'verse_selected': `נבחרו פסוקים חדשים להנצחת ${activity.memorial_name}`,
+            'profile_updated': 'עדכנת את הפרופיל האישי',
+            'login': 'התחברת למערכת'
+        };
+        return messages[activity.type] || activity.description || 'פעילות לא מוכרת';
+    }
+
+    function getTimeAgo(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffInMs = now - date;
+        const diffInMinutes = Math.floor(diffInMs / (60 * 1000));
+        const diffInHours = Math.floor(diffInMinutes / 60);
+        const diffInDays = Math.floor(diffInHours / 24);
+
+        if (diffInMinutes < 1) return 'הרגע';
+        if (diffInMinutes === 1) return 'לפני דקה';
+        if (diffInMinutes < 60) return `לפני ${diffInMinutes} דקות`;
+        if (diffInHours === 1) return 'לפני שעה';
+        if (diffInHours < 24) return `לפני ${diffInHours} שעות`;
+        if (diffInDays === 1) return 'אתמול';
+        if (diffInDays < 7) return `לפני ${diffInDays} ימים`;
+        if (diffInDays < 30) return `לפני ${Math.floor(diffInDays / 7)} שבועות`;
+        return date.toLocaleDateString('he-IL');
+    }
+
+    // Auto-refresh dashboard data every 5 minutes
+    setInterval(loadDashboardData, 5 * 60 * 1000);
+});
+</script>
+{% endblock %}

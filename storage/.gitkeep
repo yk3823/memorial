@@ -1,0 +1,6 @@
+# Storage directory for photos and videos
+# This directory will be mounted to a PVC in Kubernetes
+# Local structure:
+# - photos/ - Memorial photos organized by memorial ID
+# - videos/ - Memorial videos organized by memorial ID  
+# - temp/ - Temporary uploads during processing

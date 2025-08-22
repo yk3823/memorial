@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בדיקת אלגוריתם בחירת פסוקים - אתר זיכרון</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/hebrew_rtl.css') }}">
+    <style>
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: 'Noto Sans Hebrew', 'Arial Hebrew', Arial, sans-serif;
+        }
+        
+        .algorithm-test {
+            background: white;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-right: 5px solid #2E86AB;
+        }
+        
+        .test-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2C3E50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .input-section {
+            background: #F8F9FA;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #34495E;
+        }
+        
+        .hebrew-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #E8F4FD;
+            border-radius: 10px;
+            font-size: 20px;
+            font-family: 'Noto Sans Hebrew', 'Arial Hebrew', Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            background: white;
+        }
+        
+        .hebrew-input:focus {
+            border-color: #2E86AB;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(46, 134, 171, 0.1);
+        }
+        
+        .btn-group {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background: #2E86AB;
+            color: white;
+            padding: 15px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Noto Sans Hebrew', 'Arial Hebrew', Arial, sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #1F5F79;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-secondary {
+            background: #6C757D;
+        }
+        
+        .btn-secondary:hover {
+            background: #495057;
+        }
+        
+        .results-container {
+            background: #FFFFFF;
+            border: 2px solid #E8F4FD;
+            border-radius: 12px;
+            margin: 25px 0;
+            min-height: 150px;
+        }
+        
+        .results-header {
+            background: #E8F4FD;
+            padding: 15px 20px;
+            border-bottom: 1px solid #BDE0FF;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .results-content {
+            padding: 20px;
+        }
+        
+        .verse-result {
+            background: #FAFBFC;
+            border-right: 4px solid #2E86AB;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .verse-result:hover {
+            background: #F0F9FF;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .verse-hebrew {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2C3E50;
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+        
+        .verse-english {
+            font-size: 16px;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 12px;
+        }
+        
+        .verse-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            color: #2E86AB;
+            font-weight: bold;
+        }
+        
+        .letter-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            background: #2E86AB;
+            color: white;
+            border-radius: 50%;
+            font-size: 16px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        .neshama-badge {
+            background: #E74C3C;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .quality-score {
+            background: #27AE60;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        
+        .method-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+        
+        .method-card {
+            background: white;
+            border: 2px solid #E8F4FD;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .method-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2E86AB;
+            margin-bottom: 15px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: #F8F9FA;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2E86AB;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2E86AB;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status-message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        
+        .status-success {
+            background: #D4EDDA;
+            color: #155724;
+            border: 1px solid #C3E6CB;
+        }
+        
+        .status-error {
+            background: #F8D7DA;
+            color: #721C24;
+            border: 1px solid #F1AEBF;
+        }
+        
+        .status-info {
+            background: #D1ECF1;
+            color: #0C5460;
+            border: 1px solid #B6DDE8;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <header>
+            <h1 class="test-title">
+                🧮 בדיקת אלגוריתם בחירת פסוקים
+            </h1>
+            <p style="color: #666; font-size: 18px; margin-bottom: 30px;">
+                בדיקה מעמיקה של האלגוריתם לבחירת פסוקים מתהילים קיט על פי שמות עבריים
+            </p>
+        </header>
+
+        <!-- Main Algorithm Test -->
+        <div class="algorithm-test">
+            <h2 class="test-title">
+                <span>🎯</span>
+                בדיקת האלגוריתם הבסיסי
+            </h2>
+            
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="testName">שם עברי לבדיקה:</label>
+                    <input type="text" id="testName" class="hebrew-input" placeholder="הזן שם עברי (למשל: יוסף, מרים, אברהם)">
+                </div>
+                
+                <div class="form-group">
+                    <label for="versesCount">מספר פסוקים לכל אות:</label>
+                    <select id="versesCount" class="hebrew-input" style="width: auto;">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="selectionMethod">שיטת בחירה:</label>
+                    <select id="selectionMethod" class="hebrew-input" style="width: auto;">
+                        <option value="balanced">מאוזן (balanced)</option>
+                        <option value="sequential">רציף (sequential)</option>
+                        <option value="random">אקראי (random)</option>
+                        <option value="weighted">משוקלל (weighted)</option>
+                        <option value="spiritual">רוחני (spiritual)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="includeNeshama" checked> 
+                        הוסף פסוקי נשמה (נ,ש,מ,ה)
+                    </label>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn" onclick="runAlgorithmTest()">🚀 הפעל בדיקה</button>
+                    <button class="btn btn-secondary" onclick="runBatchTest()">📊 בדיקה מקיפה</button>
+                    <button class="btn btn-secondary" onclick="compareAllMethods()">⚖️ השוואת שיטות</button>
+                </div>
+            </div>
+            
+            <div id="algorithmResults" class="results-container">
+                <div class="results-header">
+                    <h3>תוצאות בדיקה</h3>
+                </div>
+                <div class="results-content">
+                    <p style="color: #666; text-align: center;">הזן שם עברי והפעל בדיקה לראות תוצאות</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Analysis -->
+        <div class="algorithm-test">
+            <h2 class="test-title">
+                <span>📈</span>
+                ניתוח ביצועים
+            </h2>
+            
+            <div class="btn-group">
+                <button class="btn" onclick="runPerformanceTest()">⏱️ בדיקת ביצועים</button>
+                <button class="btn btn-secondary" onclick="testEdgeCases()">🔍 מקרי קצה</button>
+            </div>
+            
+            <div id="performanceResults" class="results-container">
+                <div class="results-header">
+                    <h3>תוצאות ביצועים</h3>
+                </div>
+                <div class="results-content">
+                    <p style="color: #666; text-align: center;">הפעל בדיקת ביצועים לראות נתונים</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Common Names Test -->
+        <div class="algorithm-test">
+            <h2 class="test-title">
+                <span>👥</span>
+                בדיקת שמות נפוצים
+            </h2>
+            
+            <div class="btn-group">
+                <button class="btn" onclick="testCommonNames()">👨‍👩‍👧‍👦 שמות נפוצים</button>
+                <button class="btn btn-secondary" onclick="testBiblicalNames()">📖 שמות מקראיים</button>
+                <button class="btn btn-secondary" onclick="testModernNames()">🌟 שמות מודרניים</button>
+            </div>
+            
+            <div id="commonNamesResults" class="results-container">
+                <div class="results-header">
+                    <h3>תוצאות שמות נפוצים</h3>
+                </div>
+                <div class="results-content">
+                    <p style="color: #666; text-align: center;">הפעל בדיקת שמות לראות תוצאות</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>מריץ בדיקה...</p>
+        </div>
+    </div>
+
+    <script>
+        // API Base URL
+        const apiBaseUrl = '/api/v1';
+        
+        // Utility functions
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function updateResults(containerId, content) {
+            const container = document.getElementById(containerId);
+            const contentDiv = container.querySelector('.results-content');
+            contentDiv.innerHTML = content;
+        }
+        
+        async function apiCall(endpoint, options = {}) {
+            try {
+                showLoading();
+                const response = await fetch(apiBaseUrl + endpoint, options);
+                const data = await response.json();
+                hideLoading();
+                return { success: response.ok, data: data, status: response.status };
+            } catch (error) {
+                hideLoading();
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // Main algorithm test
+        async function runAlgorithmTest() {
+            const name = document.getElementById('testName').value.trim();
+            if (!name) {
+                updateResults('algorithmResults', 
+                    '<div class="status-message status-error">יש להזין שם עברי לבדיקה</div>');
+                return;
+            }
+            
+            const versesCount = document.getElementById('versesCount').value;
+            const method = document.getElementById('selectionMethod').value;
+            const includeNeshama = document.getElementById('includeNeshama').checked;
+            
+            const url = `/hebrew/name-verses?name=${encodeURIComponent(name)}&verses_per_letter=${versesCount}&selection_method=${method}&include_neshama=${includeNeshama}`;
+            
+            const result = await apiCall(url);
+            
+            if (result.success) {
+                displayVerseResults(result.data, 'algorithmResults');
+            } else {
+                updateResults('algorithmResults', 
+                    `<div class="status-message status-error">שגיאה: ${result.data?.detail || result.error}</div>`);
+            }
+        }
+        
+        function displayVerseResults(data, containerId) {
+            let html = `
+                <div class="status-message status-success">
+                    נבחרו בהצלחה ${data.total_verses} פסוקים לשם "${data.name}"
+                </div>
+            `;
+            
+            // Statistics
+            html += `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">${data.name_verses_count}</div>
+                        <div class="stat-label">פסוקי שם</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.neshama_verses_count}</div>
+                        <div class="stat-label">פסוקי נשמה</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.selection_method}</div>
+                        <div class="stat-label">שיטת בחירה</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.verses_per_letter}</div>
+                        <div class="stat-label">פסוקים לאות</div>
+                    </div>
+                </div>
+            `;
+            
+            // Name analysis
+            if (data.name_analysis) {
+                html += `
+                    <div class="method-card" style="margin: 20px 0;">
+                        <h4>ניתוח השם:</h4>
+                        <p><strong>ערך גימטריה כולל:</strong> ${data.name_analysis.total_gematria}</p>
+                        <p><strong>אותיות בשם:</strong> 
+                `;
+                
+                data.name_analysis.letters.forEach(letter => {
+                    html += `
+                        <span class="letter-badge">${letter.hebrew_letter}</span>
+                    `;
+                });
+                
+                html += `</p></div>`;
+            }
+            
+            // Display verses
+            html += '<h4>פסוקים נבחרים:</h4>';
+            
+            data.verses.forEach((verse, index) => {
+                const neshamaIcon = verse.is_neshama_verse ? '✨' : '';
+                const neshama_badge = verse.is_neshama_verse ? '<span class="neshama-badge">נשמה</span>' : '';
+                
+                html += `
+                    <div class="verse-result">
+                        <div class="verse-hebrew">${neshamaIcon} ${verse.hebrew_text}</div>
+                        <div class="verse-english">${verse.english_text}</div>
+                        <div class="verse-meta">
+                            <div>
+                                <span class="letter-badge">${verse.letter.hebrew_letter}</span>
+                                ${verse.verse_reference} | ${verse.letter.hebrew_name}
+                                ${neshama_badge}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            updateResults(containerId, html);
+        }
+        
+        // Batch testing
+        async function runBatchTest() {
+            const testNames = ['יוסף', 'מרים', 'אברהם', 'שרה', 'דוד', 'רחל', 'משה', 'לאה'];
+            let html = '<div class="status-message status-info">מריץ בדיקה מקיפה על ' + testNames.length + ' שמות...</div>';
+            
+            updateResults('algorithmResults', html);
+            
+            html += '<div class="method-comparison">';
+            
+            for (const name of testNames) {
+                const url = `/hebrew/name-verses?name=${encodeURIComponent(name)}&verses_per_letter=1&selection_method=balanced&include_neshama=true`;
+                const result = await apiCall(url);
+                
+                if (result.success) {
+                    const data = result.data;
+                    html += `
+                        <div class="method-card">
+                            <div class="method-title">${name}</div>
+                            <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                                <div class="stat-card">
+                                    <div class="stat-number">${data.total_verses}</div>
+                                    <div class="stat-label">סה"כ פסוקים</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">${data.name_analysis?.letters?.length || 0}</div>
+                                    <div class="stat-label">אותיות</div>
+                                </div>
+                            </div>
+                            <p style="font-size: 14px; color: #666;">
+                                גימטריה: ${data.name_analysis?.total_gematria || 'לא ידוע'}
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="method-card">
+                            <div class="method-title">${name}</div>
+                            <div class="status-message status-error">שגיאה בבדיקה</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            html += '</div>';
+            updateResults('algorithmResults', html);
+        }
+        
+        // Compare all methods
+        async function compareAllMethods() {
+            const testName = 'יוסף'; // Fixed name for comparison
+            const methods = ['balanced', 'sequential', 'random', 'weighted'];
+            
+            let html = `<div class="status-message status-info">משווה שיטות בחירה שונות לשם "${testName}"</div>`;
+            html += '<div class="method-comparison">';
+            
+            updateResults('algorithmResults', html + '</div>');
+            
+            for (const method of methods) {
+                const url = `/hebrew/name-verses?name=${encodeURIComponent(testName)}&verses_per_letter=2&selection_method=${method}&include_neshama=false`;
+                const result = await apiCall(url);
+                
+                if (result.success) {
+                    const data = result.data;
+                    html += `
+                        <div class="method-card">
+                            <div class="method-title">שיטה: ${method}</div>
+                            <div class="stats-grid" style="grid-template-columns: 1fr;">
+                                <div class="stat-card">
+                                    <div class="stat-number">${data.total_verses}</div>
+                                    <div class="stat-label">פסוקים נבחרים</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                    `;
+                    
+                    data.verses.slice(0, 3).forEach(verse => {
+                        html += `
+                            <div style="font-size: 12px; color: #666; margin: 5px 0; padding: 5px; background: #F8F9FA; border-radius: 4px;">
+                                [${verse.letter.hebrew_letter}] פסוק ${verse.verse_number}
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div></div>';
+                } else {
+                    html += `
+                        <div class="method-card">
+                            <div class="method-title">שיטה: ${method}</div>
+                            <div class="status-message status-error">שגיאה</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            html += '</div>';
+            updateResults('algorithmResults', html);
+        }
+        
+        // Performance test
+        async function runPerformanceTest() {
+            const startTime = performance.now();
+            const testCases = ['א', 'יוסף', 'אברהם אבינו', 'מרים הנביאה', 'יהושע בן נון'];
+            
+            let html = '<div class="status-message status-info">מריץ בדיקת ביצועים...</div>';
+            updateResults('performanceResults', html);
+            
+            const results = [];
+            
+            for (const testCase of testCases) {
+                const caseStartTime = performance.now();
+                const url = `/hebrew/name-verses?name=${encodeURIComponent(testCase)}&verses_per_letter=1&selection_method=balanced&include_neshama=true`;
+                const result = await apiCall(url);
+                const caseEndTime = performance.now();
+                
+                results.push({
+                    name: testCase,
+                    success: result.success,
+                    time: caseEndTime - caseStartTime,
+                    verses: result.success ? result.data.total_verses : 0
+                });
+            }
+            
+            const totalTime = performance.now() - startTime;
+            
+            html = `
+                <div class="status-message status-success">
+                    בדיקת ביצועים הושלמה בזמן כולל: ${totalTime.toFixed(2)} מילישניות
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">${results.length}</div>
+                        <div class="stat-label">מקרי בדיקה</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${totalTime.toFixed(0)}ms</div>
+                        <div class="stat-label">זמן כולל</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${(totalTime / results.length).toFixed(0)}ms</div>
+                        <div class="stat-label">ממוצע לבדיקה</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${results.filter(r => r.success).length}/${results.length}</div>
+                        <div class="stat-label">הצלחה</div>
+                    </div>
+                </div>
+                <h4>פרטי ביצועים:</h4>
+            `;
+            
+            results.forEach(result => {
+                html += `
+                    <div class="verse-result" style="padding: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${result.name}</strong>
+                                ${result.success ? `(${result.verses} פסוקים)` : '(שגיאה)'}
+                            </div>
+                            <div class="quality-score">
+                                ${result.time.toFixed(1)}ms
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            updateResults('performanceResults', html);
+        }
+        
+        // Edge cases test
+        async function testEdgeCases() {
+            const edgeCases = [
+                { name: 'א', description: 'אות בודדת' },
+                { name: 'ייי', description: 'אותיות חוזרות' },
+                { name: 'ץךןםף', description: 'אותיות סופיות' },
+                { name: 'אאאא', description: 'אות אחת חוזרת' },
+                { name: 'נשמה', description: 'רק אותיות נשמה' }
+            ];
+            
+            let html = '<div class="status-message status-info">בודק מקרי קצה...</div>';
+            updateResults('performanceResults', html);
+            
+            html = '<h4>תוצאות מקרי קצה:</h4>';
+            
+            for (const testCase of edgeCases) {
+                const url = `/hebrew/name-verses?name=${encodeURIComponent(testCase.name)}&verses_per_letter=1&selection_method=balanced&include_neshama=false`;
+                const result = await apiCall(url);
+                
+                html += `
+                    <div class="verse-result">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>"${testCase.name}"</strong> - ${testCase.description}
+                                ${result.success ? `<br><small style="color: #666;">נמצאו ${result.data.total_verses} פסוקים</small>` : ''}
+                            </div>
+                            <div class="quality-score" style="background: ${result.success ? '#27AE60' : '#E74C3C'};">
+                                ${result.success ? '✓' : '✗'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            updateResults('performanceResults', html);
+        }
+        
+        // Common names test
+        async function testCommonNames() {
+            const commonNames = ['יוסף', 'מרים', 'אברהם', 'שרה', 'דוד', 'רחל', 'משה', 'לאה', 'יצחק', 'רבקה'];
+            await runNamesTest(commonNames, 'שמות נפוצים', 'commonNamesResults');
+        }
+        
+        async function testBiblicalNames() {
+            const biblicalNames = ['אדם', 'חוה', 'נח', 'יעקב', 'יהודה', 'בנימין', 'שמעון', 'לוי', 'ראובן', 'זבולון'];
+            await runNamesTest(biblicalNames, 'שמות מקראיים', 'commonNamesResults');
+        }
+        
+        async function testModernNames() {
+            const modernNames = ['אריאל', 'נועה', 'איתן', 'תמר', 'רון', 'מיכל', 'דני', 'שרון', 'עמית', 'הדר'];
+            await runNamesTest(modernNames, 'שמות מודרניים', 'commonNamesResults');
+        }
+        
+        async function runNamesTest(names, category, containerId) {
+            let html = `<div class="status-message status-info">בודק ${names.length} ${category}...</div>`;
+            updateResults(containerId, html);
+            
+            html = `<h4>תוצאות ${category}:</h4><div class="method-comparison">`;
+            
+            for (const name of names) {
+                const url = `/hebrew/name-verses?name=${encodeURIComponent(name)}&verses_per_letter=1&selection_method=balanced&include_neshama=true`;
+                const result = await apiCall(url);
+                
+                if (result.success) {
+                    const data = result.data;
+                    html += `
+                        <div class="method-card">
+                            <div class="method-title">${name}</div>
+                            <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                                <div class="stat-card">
+                                    <div class="stat-number">${data.total_verses}</div>
+                                    <div class="stat-label">פסוקים</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-number">${data.name_analysis?.letters?.length || 0}</div>
+                                    <div class="stat-label">אותיות</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 12px; color: #666; margin-top: 8px;">
+                                גימטריה: ${data.name_analysis?.total_gematria || 'לא ידוע'}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="method-card">
+                            <div class="method-title">${name}</div>
+                            <div class="status-message status-error" style="font-size: 12px; padding: 8px;">שגיאה</div>
+                        </div>
+                    `;
+                }
+            }
+            
+            html += '</div>';
+            updateResults(containerId, html);
+        }
+        
+        // Initialize with sample data
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('testName').value = 'יוסף';
+        });
+    </script>
+</body>
+</html>

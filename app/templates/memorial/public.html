@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block title %}Memorial - {{ memorial.deceased_name_english or memorial.deceased_name_hebrew or 'Unknown' }} - Memorial Website{% endblock %}
+
+{% block extra_css %}
+<style>
+    .memorial-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .memorial-photo {
+        border-radius: 50%;
+        border: 5px solid white;
+        box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+    
+    .biography {
+        line-height: 1.8;
+        text-align: justify;
+    }
+    
+    .date-card {
+        background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 0.5rem;
+    }
+    
+    .stats-card {
+        background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border-radius: 0.5rem;
+    }
+    
+    .photo-gallery {
+        gap: 1rem;
+    }
+    
+    .gallery-item {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        transition: transform 0.2s;
+    }
+    
+    .gallery-item:hover {
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="memorialContent">
+    <!-- Loading spinner -->
+    <div id="loadingSpinner" class="text-center py-5">
+        <div class="spinner-border spinner-border-lg text-primary" role="status">
+            <span class="visually-hidden">Loading memorial...</span>
+        </div>
+        <p class="mt-3 text-muted">Loading memorial page...</p>
+    </div>
+    
+    <!-- Error state -->
+    <div id="errorState" class="d-none">
+        <div class="text-center py-5">
+            <i class="bi bi-exclamation-triangle display-1 text-warning mb-3"></i>
+            <h2>Memorial Not Found</h2>
+            <p class="text-muted mb-4">The requested memorial page could not be found or is private.</p>
+            <a href="/" class="btn btn-primary">
+                <i class="bi bi-house me-2"></i>Return Home
+            </a>
+        </div>
+    </div>
+    
+    <!-- Memorial content template -->
+    <div id="memorialTemplate" class="d-none">
+        <!-- Hero Section -->
+        <div class="memorial-hero p-5 text-center">
+            <div class="row align-items-center">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <div class="memorial-photo-container">
+                        <img id="memorialPhoto" src="/static/default-avatar.png" 
+                             alt="Memorial Photo" class="memorial-photo" 
+                             style="width: 200px; height: 200px; object-fit: cover;">
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <h1 class="display-4 mb-2" id="memorialNameEnglish">Name</h1>
+                    <h2 class="h4 mb-3 hebrew-text" id="memorialNameHebrew">שם עברי</h2>
+                    <div class="row text-center">
+                        <div class="col-md-6 mb-3">
+                            <div class="date-card p-3">
+                                <i class="bi bi-calendar-heart display-6 mb-2"></i>
+                                <h6 class="mb-1">Born</h6>
+                                <p class="mb-0" id="birthDate">Date</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="stats-card p-3">
+                                <i class="bi bi-calendar-x display-6 mb-2"></i>
+                                <h6 class="mb-1">Passed Away</h6>
+                                <p class="mb-0" id="deathDate">Date</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation -->
+        <ul class="nav nav-pills nav-justified mb-4" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="biography-tab" data-bs-toggle="pill" 
+                        data-bs-target="#biography" type="button">
+                    <i class="bi bi-book me-2"></i>Life Story
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="photos-tab" data-bs-toggle="pill" 
+                        data-bs-target="#photos" type="button">
+                    <i class="bi bi-images me-2"></i>Photos
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="yahrzeit-tab" data-bs-toggle="pill" 
+                        data-bs-target="#yahrzeit" type="button">
+                    <i class="bi bi-calendar-heart me-2"></i>Yahrzeit
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="location-tab" data-bs-toggle="pill" 
+                        data-bs-target="#location" type="button">
+                    <i class="bi bi-geo-alt me-2"></i>Location
+                </button>
+            </li>
+        </ul>
+        
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Biography Tab -->
+            <div class="tab-pane fade show active" id="biography" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-book me-2"></i>Life Story
+                        </h5>
+                        <div class="biography" id="memorialBiography">
+                            <p>Loading biography...</p>
+                        </div>
+                        
+                        <!-- Memorial Song/Video -->
+                        <div id="memorialMedia" class="mt-4 d-none">
+                            <h6><i class="bi bi-music-note me-2"></i>Memorial Song</h6>
+                            <div class="ratio ratio-16x9">
+                                <iframe id="memorialVideo" src="" allowfullscreen></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Photos Tab -->
+            <div class="tab-pane fade" id="photos" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-images me-2"></i>Photo Gallery
+                        </h5>
+                        <div id="photoGallery" class="photo-gallery d-flex flex-wrap">
+                            <!-- Photos will be loaded here -->
+                        </div>
+                        <div id="noPhotos" class="text-center py-4 text-muted d-none">
+                            <i class="bi bi-images display-4 mb-3"></i>
+                            <p>No photos have been added yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Yahrzeit Tab -->
+            <div class="tab-pane fade" id="yahrzeit" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-calendar-heart me-2"></i>Yahrzeit Information
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Hebrew Death Date</h6>
+                                        <p class="card-text hebrew-text h5" id="hebrewDeathDate">
+                                            תאריך עברי לא זמין
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">Next Yahrzeit</h6>
+                                        <p class="card-text h5" id="nextYahrzeit">
+                                            Calculating...
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h6>Psalm 119 Verses</h6>
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <div id="psalmVerses" class="text-center">
+                                        <p class="mb-0">Psalm verses will be generated based on the Hebrew name</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Location Tab -->
+            <div class="tab-pane fade" id="location" role="tabpanel">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-geo-alt me-2"></i>Grave Location
+                        </h5>
+                        <div id="locationContent">
+                            <p class="text-muted">Location information will be displayed here when available.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center mt-5 py-4 border-top">
+            <p class="text-muted mb-2">
+                <i class="bi bi-eye me-2"></i>
+                Viewed <span id="viewCount">0</span> times
+            </p>
+            <p class="small text-muted">
+                Memorial created on <span id="createdDate">Date</span>
+            </p>
+            
+            <!-- Share buttons -->
+            <div class="mt-3">
+                <button class="btn btn-outline-primary btn-sm me-2" onclick="shareMemorial()">
+                    <i class="bi bi-share me-1"></i>Share
+                </button>
+                {% if current_user %}
+                <a href="/memorials/create" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i>Create Memorial
+                </a>
+                {% else %}
+                <a href="/register" class="btn btn-primary btn-sm">
+                    <i class="bi bi-person-plus me-1"></i>Create Account
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const memorialSlug = '{{ memorial_slug }}';
+    loadMemorial(memorialSlug);
+});
+
+async function loadMemorial(slug) {
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const errorState = document.getElementById('errorState');
+    const memorialTemplate = document.getElementById('memorialTemplate');
+    
+    try {
+        const response = await fetch(`${MemorialApp.API_BASE}/memorials/${slug}/public`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const memorial = await response.json();
+        displayMemorial(memorial);
+        
+    } catch (error) {
+        console.error('Failed to load memorial:', error);
+        loadingSpinner.classList.add('d-none');
+        errorState.classList.remove('d-none');
+    }
+}
+
+function displayMemorial(memorial) {
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const memorialTemplate = document.getElementById('memorialTemplate');
+    
+    // Update page title
+    document.title = `Memorial - ${memorial.deceased_name_english || memorial.deceased_name_hebrew || 'Unknown'} - Memorial Website`;
+    
+    // Fill in memorial data
+    document.getElementById('memorialNameEnglish').textContent = memorial.deceased_name_english || 'Name not provided';
+    document.getElementById('memorialNameHebrew').textContent = memorial.deceased_name_hebrew || 'שם עברי לא זמין';
+    document.getElementById('birthDate').textContent = memorial.birth_date_gregorian ? 
+        formatDate(memorial.birth_date_gregorian) : 'Date not provided';
+    document.getElementById('deathDate').textContent = formatDate(memorial.death_date_gregorian);
+    document.getElementById('memorialBiography').innerHTML = memorial.biography ? 
+        memorial.biography.replace(/\n/g, '<br>') : 'No biography provided.';
+    document.getElementById('viewCount').textContent = memorial.page_views || 0;
+    document.getElementById('createdDate').textContent = formatDate(memorial.created_at);
+    
+    // Hebrew dates
+    if (memorial.death_date_hebrew) {
+        document.getElementById('hebrewDeathDate').textContent = memorial.death_date_hebrew;
+    }
+    
+    if (memorial.next_yahrzeit_gregorian) {
+        const nextYahrzeit = new Date(memorial.next_yahrzeit_gregorian);
+        const daysUntil = Math.ceil((nextYahrzeit - new Date()) / (1000 * 60 * 60 * 24));
+        document.getElementById('nextYahrzeit').textContent = 
+            `${formatDate(memorial.next_yahrzeit_gregorian)} (${daysUntil} days)`;
+    } else {
+        document.getElementById('nextYahrzeit').textContent = 'Not calculated';
+    }
+    
+    // Memorial media
+    if (memorial.memorial_song_url) {
+        const mediaDiv = document.getElementById('memorialMedia');
+        const iframe = document.getElementById('memorialVideo');
+        
+        if (memorial.memorial_song_url.includes('youtube.com') || memorial.memorial_song_url.includes('youtu.be')) {
+            const videoId = extractYouTubeId(memorial.memorial_song_url);
+            iframe.src = `https://www.youtube.com/embed/${videoId}`;
+            mediaDiv.classList.remove('d-none');
+        }
+    }
+    
+    // Photos
+    displayPhotos(memorial.photos || []);
+    
+    // Show memorial
+    loadingSpinner.classList.add('d-none');
+    memorialTemplate.classList.remove('d-none');
+    
+    // Update page views
+    updatePageViews(memorial.unique_slug);
+}
+
+function displayPhotos(photos) {
+    const gallery = document.getElementById('photoGallery');
+    const noPhotos = document.getElementById('noPhotos');
+    
+    if (photos.length === 0) {
+        noPhotos.classList.remove('d-none');
+        return;
+    }
+    
+    gallery.innerHTML = photos.map(photo => `
+        <div class="gallery-item">
+            <img src="${photo.file_path}" alt="${photo.caption || 'Memorial photo'}" 
+                 class="img-fluid" style="width: 200px; height: 200px; object-fit: cover;"
+                 onclick="showPhotoModal('${photo.file_path}', '${photo.caption || ''}')">
+        </div>
+    `).join('');
+}
+
+function extractYouTubeId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function formatDate(dateString) {
+    return new Date(dateString).toLocaleDateString();
+}
+
+function shareMemorial() {
+    const title = document.getElementById('memorialNameEnglish').textContent;
+    const url = window.location.href;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: `Memorial for ${title}`,
+            text: 'View this memorial page',
+            url: url
+        });
+    } else {
+        // Fallback - copy to clipboard
+        navigator.clipboard.writeText(url).then(() => {
+            MemorialApp.showFlash('Memorial URL copied to clipboard!', 'success');
+        });
+    }
+}
+
+function showPhotoModal(imageSrc, caption) {
+    // Create a simple modal for photo viewing
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">${caption || 'Photo'}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="${imageSrc}" class="img-fluid" alt="${caption || 'Photo'}">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    modal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(modal);
+    });
+}
+
+async function updatePageViews(slug) {
+    try {
+        // In a real implementation, you'd call an endpoint to update views
+        // For now, this is just a placeholder
+        console.log('Page view recorded for:', slug);
+    } catch (error) {
+        // Silent fail for page view tracking
+    }
+}
+</script>
+{% endblock %}

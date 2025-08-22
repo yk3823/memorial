@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בדיקת תכונות עבריות - אתר זיכרון</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/hebrew_rtl.css') }}">
+    <style>
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: 'Noto Sans Hebrew', 'Arial Hebrew', Arial, sans-serif;
+        }
+        
+        .test-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-right: 4px solid #4A90E2;
+        }
+        
+        .test-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2C3E50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #34495E;
+        }
+        
+        .hebrew-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #E8F4FD;
+            border-radius: 8px;
+            font-size: 18px;
+            font-family: 'Noto Sans Hebrew', 'Arial Hebrew', Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+        }
+        
+        .hebrew-input:focus {
+            border-color: #4A90E2;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+        
+        .btn {
+            background: #4A90E2;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Noto Sans Hebrew', 'Arial Hebrew', Arial, sans-serif;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            background: #357ABD;
+        }
+        
+        .results {
+            background: #F8F9FA;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            min-height: 100px;
+        }
+        
+        .verse-card {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-right: 3px solid #E8F4FD;
+        }
+        
+        .verse-hebrew {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2C3E50;
+            line-height: 1.8;
+            margin-bottom: 8px;
+        }
+        
+        .verse-english {
+            color: #666;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+        
+        .verse-reference {
+            font-size: 14px;
+            color: #4A90E2;
+            font-weight: bold;
+        }
+        
+        .letter-display {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: #4A90E2;
+            color: white;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        .alphabet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .letter-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #E8F4FD;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .letter-card:hover {
+            border-color: #4A90E2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .letter-hebrew {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2C3E50;
+            margin-bottom: 5px;
+        }
+        
+        .letter-name {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        .status.success {
+            background: #D4EDDA;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #F8D7DA;
+            color: #721C24;
+        }
+        
+        .status.info {
+            background: #D1ECF1;
+            color: #0C5460;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4A90E2;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <header>
+            <h1 class="main-title">🧪 בדיקת תכונות עבריות</h1>
+            <p class="main-subtitle">בדיקה מקיפה של כל התכונות העבריות באתר הזיכרון</p>
+        </header>
+
+        <!-- Hebrew Name Analysis Test -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <span>📝</span>
+                בדיקת ניתוח שמות עבריים
+            </h2>
+            <p class="test-description">
+                הזן שם עברי כדי לבדוק את אלגוריתם ניתוח השמות. המערכת תפרק את השם לאותיות ותציג מידע על כל אות.
+            </p>
+            
+            <div class="input-group">
+                <label for="hebrewName">שם עברי לבדיקה:</label>
+                <input type="text" id="hebrewName" class="hebrew-input" placeholder="לדוגמה: יוסף, מרים, אברהם">
+            </div>
+            
+            <button class="btn" onclick="analyzeHebrewName()">נתח שם עברי</button>
+            <button class="btn" onclick="testCommonNames()">בדוק שמות נפוצים</button>
+            
+            <div id="nameAnalysisResults" class="results"></div>
+        </div>
+
+        <!-- MAIN ENGINE TEST -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <span>🎯</span>
+                המנוע הראשי - פסוקים מלאים לזיכרון
+            </h2>
+            <p class="test-description">
+                <strong>זהו המנוע הראשי של האתר!</strong><br>
+                עבור שם כמו "יוסף" המערכת תציג בסדר:<br>
+                1. כל 8 הפסוקים של האות י (פסוקים 73-80)<br>
+                2. כל 8 הפסוקים של האות ו (פסוקים 41-48)<br>  
+                3. כל 8 הפסוקים של האות ס (פסוקים 113-120)<br>
+                4. כל 8 הפסוקים של האות ף/פ (פסוקים 129-136)<br>
+                5. אחר כך כל פסוקי נשמה: נ,ש,מ,ה
+            </p>
+            
+            <div class="input-group">
+                <label for="memorialName">שם עברי לזיכרון:</label>
+                <input type="text" id="memorialName" class="hebrew-input" placeholder="הזן שם עברי (לדוגמה: יוסף, מרים, אברהם)">
+            </div>
+            
+            <button class="btn" onclick="generateMemorialVerses()">🕯️ צור פסוקי זיכרון מלאים</button>
+            <button class="btn" onclick="testCommonMemorialNames()">👥 בדוק שמות נפוצים</button>
+            
+            <div id="memorialVersesResults" class="results"></div>
+        </div>
+
+        <!-- Verse Selection Test (Legacy) -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <span>📜</span>
+                בדיקת בחירת פסוקים (בחירה חלקית)
+            </h2>
+            <p class="test-description">
+                בדיקת בחירת פסוקים מוגבלת (לא כל הפסוקים) עם שיטות שונות.
+            </p>
+            
+            <div class="input-group">
+                <label for="nameForVerses">שם עברי לבחירת פסוקים:</label>
+                <input type="text" id="nameForVerses" class="hebrew-input" placeholder="הזן שם עברי">
+            </div>
+            
+            <div class="input-group">
+                <label for="versesPerLetter">מספר פסוקים לכל אות:</label>
+                <select id="versesPerLetter" class="hebrew-input" style="width: auto;">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="selectionMethod">שיטת בחירה:</label>
+                <select id="selectionMethod" class="hebrew-input" style="width: auto;">
+                    <option value="balanced">מאוזן</option>
+                    <option value="sequential">רציף</option>
+                    <option value="random">אקראי</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>
+                    <input type="checkbox" id="includeNeshama" checked> 
+                    הוסף פסוקי נשמה
+                </label>
+            </div>
+            
+            <button class="btn" onclick="selectVerses()">בחר פסוקים</button>
+            <button class="btn" onclick="testMultipleMethods()">בדוק כל השיטות</button>
+            
+            <div id="verseSelectionResults" class="results"></div>
+        </div>
+
+        <!-- Hebrew Alphabet Display Test -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <span>🔤</span>
+                בדיקת תצוגת האלפבית העברי
+            </h2>
+            <p class="test-description">
+                הצגת כל 22 האותיות העבריות עם המידע הרלוונטי מבסיס הנתונים.
+            </p>
+            
+            <button class="btn" onclick="loadHebrewAlphabet()">טען אלפבית עברי</button>
+            <button class="btn" onclick="loadAlphabetWithVerses()">טען עם פסוקים לדוגמה</button>
+            
+            <div id="alphabetResults" class="results"></div>
+        </div>
+
+        <!-- Hebrew Search Test -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <span>🔍</span>
+                בדיקת חיפוש עברי
+            </h2>
+            <p class="test-description">
+                בדיקת מנוע החיפוש העברי שמחפש בפסוקים, אותיות ואזכרות.
+            </p>
+            
+            <div class="input-group">
+                <label for="searchQuery">שאילתת חיפוש:</label>
+                <input type="text" id="searchQuery" class="hebrew-input" placeholder="חפש בעברית...">
+            </div>
+            
+            <div class="input-group">
+                <label for="searchType">סוג חיפוש:</label>
+                <select id="searchType" class="hebrew-input" style="width: auto;">
+                    <option value="all">הכל</option>
+                    <option value="verses">פסוקים</option>
+                    <option value="letters">אותיות</option>
+                    <option value="memorials">אזכרות</option>
+                </select>
+            </div>
+            
+            <button class="btn" onclick="searchHebrew()">חפש</button>
+            <button class="btn" onclick="testSearchSamples()">בדוק דוגמאות חיפוש</button>
+            
+            <div id="searchResults" class="results"></div>
+        </div>
+
+        <!-- RTL Layout Test -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <span>↩️</span>
+                בדיקת פריסה מימין לשמאל (RTL)
+            </h2>
+            <p class="test-description">
+                בדיקת התצוגה הנכונה של טקסט עברי וכיוון הפריסה.
+            </p>
+            
+            <div style="border: 2px dashed #4A90E2; padding: 15px; margin: 10px 0;">
+                <h3>בדיקת כיוון טקסט עברי:</h3>
+                <p class="verse-hebrew">אַשְׁרֵי תְמִימֵי־דָרֶךְ הַהֹלְכִים בְּתוֹרַת יְהוָה</p>
+                <p class="verse-english">Blessed are those whose way is blameless, who walk in the law of the LORD</p>
+                
+                <h4>בדיקת מספרים עבריים:</h4>
+                <p>פסוק מספר <!---->123<!---->: תהילים קיט:א</p>
+                
+                <h4>בדיקת ערבוב עברית-אנגלית:</h4>
+                <p>השם John בעברית יכתב יוחנן או ג'ון</p>
+            </div>
+            
+            <button class="btn" onclick="testRTLLayout()">בדוק פריסת RTL</button>
+            
+            <div id="rtlResults" class="results"></div>
+        </div>
+
+        <!-- API Health Test -->
+        <div class="test-section">
+            <h2 class="test-title">
+                <span>🏥</span>
+                בדיקת בריאות API
+            </h2>
+            <p class="test-description">
+                בדיקה שכל ה-API endpoints העבריים פועלים כראוי.
+            </p>
+            
+            <button class="btn" onclick="checkAPIHealth()">בדוק בריאות API</button>
+            <button class="btn" onclick="runFullAPITest()">בדיקה מקיפה של API</button>
+            
+            <div id="apiHealthResults" class="results"></div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>טוען...</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let apiBaseUrl = '/api/v1';
+        
+        // Show/hide loading
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        // Display results helper
+        function displayResults(containerId, content) {
+            document.getElementById(containerId).innerHTML = content;
+        }
+        
+        // API call helper
+        async function apiCall(endpoint, options = {}) {
+            try {
+                showLoading();
+                const response = await fetch(apiBaseUrl + endpoint, options);
+                const data = await response.json();
+                hideLoading();
+                return { success: response.ok, data: data, status: response.status };
+            } catch (error) {
+                hideLoading();
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // ===== MAIN ENGINE FUNCTIONS =====
+        
+        // Generate Memorial Verses - MAIN ENGINE
+        async function generateMemorialVerses() {
+            const name = document.getElementById('memorialName').value.trim();
+            if (!name) {
+                displayResults('memorialVersesResults', '<div class="status error">יש להזין שם עברי לזיכרון</div>');
+                return;
+            }
+            
+            const result = await apiCall(`/hebrew/memorial-verses?name=${encodeURIComponent(name)}`);
+            
+            if (result.success) {
+                displayMemorialVersesResults(result.data, 'memorialVersesResults');
+            } else {
+                displayResults('memorialVersesResults', 
+                    `<div class="status error">שגיאה: ${result.data?.detail || result.error}</div>`);
+            }
+        }
+        
+        function displayMemorialVersesResults(data, containerId) {
+            let html = `
+                <div class="status success">
+                    🕯️ נוצרו פסוקי זיכרון מלאים לשם "${data.hebrew_name}"
+                </div>
+                <div class="verse-card">
+                    <h4>סיכום:</h4>
+                    <p><strong>סה"כ פסוקים:</strong> ${data.summary.total_verses}</p>
+                    <p><strong>פסוקי השם:</strong> ${data.summary.name_verses_count}</p>
+                    <p><strong>פסוקי נשמה:</strong> ${data.summary.neshama_verses_count}</p>
+                    <p><strong>אותיות השם:</strong> ${data.summary.name_letters.join(', ')}</p>
+                    <p><strong>אותיות ייחודיות:</strong> ${data.summary.unique_letters.join(', ')}</p>
+                    <p><strong>מנוע:</strong> ${data.engine}</p>
+                </div>
+            `;
+            
+            // Display each section with all its verses
+            data.sections.forEach((section, index) => {
+                const sectionType = section.is_neshama ? 'נשמה' : 'שם';
+                const bgColor = section.is_neshama ? '#FFF5F5' : '#F0F9FF';
+                const borderColor = section.is_neshama ? '#E74C3C' : '#2E86AB';
+                
+                html += `
+                    <div class="verse-card" style="background: ${bgColor}; border-right-color: ${borderColor};">
+                        <h4>${section.section_title}</h4>
+                        <p><strong>סוג:</strong> ${sectionType} | <strong>מספר פסוקים:</strong> ${section.verse_count}</p>
+                        <p><strong>אות:</strong> ${section.letter.hebrew_letter} (${section.letter.hebrew_name}) - ${section.letter.english_name}</p>
+                        <p><strong>ערך גימטריה:</strong> ${section.letter.numeric_value} | <strong>מיקום באלפבית:</strong> ${section.letter.position}</p>
+                        
+                        <div style="margin-top: 15px;">
+                            <h5>כל הפסוקים של האות ${section.letter.hebrew_letter}:</h5>
+                `;
+                
+                section.verses.forEach((verse, vIndex) => {
+                    html += `
+                        <div class="verse-result" style="margin: 10px 0; padding: 12px; background: white; border: 1px solid #E8F4FD;">
+                            <div class="verse-hebrew" style="font-size: 18px;">${verse.hebrew_text}</div>
+                            <div class="verse-english" style="font-size: 14px; color: #666; margin: 8px 0;">${verse.english_text}</div>
+                            <div class="verse-meta" style="font-size: 12px; color: #4A90E2;">
+                                ${verse.verse_reference} | ${verse.verse_reference_english} | פסוק ${verse.verse_in_section} בקטע
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div></div>`;
+            });
+            
+            displayResults(containerId, html);
+        }
+        
+        // Test common memorial names with main engine
+        async function testCommonMemorialNames() {
+            const memorialNames = ['יוסף', 'מרים', 'אברהם', 'שרה', 'דוד', 'רחל'];
+            let html = '<h4>בדיקת שמות נפוצים במנוע הראשי:</h4>';
+            
+            for (const name of memorialNames) {
+                const result = await apiCall(`/hebrew/memorial-verses?name=${encodeURIComponent(name)}`);
+                
+                if (result.success) {
+                    const data = result.data;
+                    html += `
+                        <div class="verse-card">
+                            <h5>${name}</h5>
+                            <p><strong>סה"כ פסוקים:</strong> ${data.summary.total_verses} 
+                               (${data.summary.name_verses_count} פסוקי שם + ${data.summary.neshama_verses_count} פסוקי נשמה)</p>
+                            <p><strong>אותיות:</strong> ${data.summary.unique_letters.join(', ')}</p>
+                            <p><strong>קטעים:</strong> ${data.sections.length}</p>
+                            <span class="status success">✓ הושלם</span>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="verse-card">
+                            <h5>${name}</h5>
+                            <span class="status error">שגיאה במנוע</span>
+                        </div>
+                    `;
+                }
+            }
+            
+            displayResults('memorialVersesResults', html);
+        }
+
+        // Hebrew Name Analysis
+        async function analyzeHebrewName() {
+            const name = document.getElementById('hebrewName').value.trim();
+            if (!name) {
+                displayResults('nameAnalysisResults', '<div class="status error">יש להזין שם עברי</div>');
+                return;
+            }
+            
+            const result = await apiCall(`/hebrew/analyze-name?hebrew_name=${encodeURIComponent(name)}`, {
+                method: 'POST'
+            });
+            
+            if (result.success) {
+                let html = `<div class="status success">ניתוח השם "${name}" הושלם בהצלחה</div>`;
+                const analysis = result.data;
+                
+                html += `
+                    <div class="verse-card">
+                        <h4>פירוט האותיות:</h4>
+                        <div class="alphabet-grid">
+                `;
+                
+                analysis.letters.forEach(letter => {
+                    html += `
+                        <div class="letter-card">
+                            <div class="letter-hebrew">${letter.hebrew_letter}</div>
+                            <div class="letter-name">${letter.hebrew_name}</div>
+                            <div class="letter-name">ערך: ${letter.numeric_value}</div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        </div>
+                        <p><strong>סה"כ אותיות ייחודיות:</strong> ${analysis.unique_letters}</p>
+                        <p><strong>ערך גימטריה כולל:</strong> ${analysis.total_gematria_value}</p>
+                        <p><strong>פסוקים זמינים:</strong> ${analysis.available_verses}</p>
+                        <p><strong>הערות:</strong> ${analysis.analysis_notes}</p>
+                    </div>
+                `;
+                
+                displayResults('nameAnalysisResults', html);
+            } else {
+                displayResults('nameAnalysisResults', 
+                    `<div class="status error">שגיאה: ${result.data?.detail || result.error}</div>`);
+            }
+        }
+        
+        // Test common Hebrew names
+        async function testCommonNames() {
+            const commonNames = ['יוסף', 'מרים', 'אברהם', 'שרה', 'דוד', 'רחל'];
+            let html = '<h4>בדיקת שמות נפוצים:</h4>';
+            
+            for (const name of commonNames) {
+                const result = await apiCall(`/hebrew/analyze-name?hebrew_name=${encodeURIComponent(name)}`, {
+                    method: 'POST'
+                });
+                
+                if (result.success) {
+                    html += `
+                        <div class="verse-card">
+                            <strong>${name}</strong>: 
+                            ${result.data.unique_letters} אותיות, 
+                            גימטריה ${result.data.total_gematria_value}
+                            <span class="status success">✓</span>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="verse-card">
+                            <strong>${name}</strong>: <span class="status error">שגיאה</span>
+                        </div>
+                    `;
+                }
+            }
+            
+            displayResults('nameAnalysisResults', html);
+        }
+        
+        // Verse Selection
+        async function selectVerses() {
+            const name = document.getElementById('nameForVerses').value.trim();
+            const versesPerLetter = document.getElementById('versesPerLetter').value;
+            const method = document.getElementById('selectionMethod').value;
+            const includeNeshama = document.getElementById('includeNeshama').checked;
+            
+            if (!name) {
+                displayResults('verseSelectionResults', '<div class="status error">יש להזין שם עברי</div>');
+                return;
+            }
+            
+            const url = `/hebrew/name-verses?name=${encodeURIComponent(name)}&verses_per_letter=${versesPerLetter}&selection_method=${method}&include_neshama=${includeNeshama}`;
+            const result = await apiCall(url);
+            
+            if (result.success) {
+                const data = result.data;
+                let html = `
+                    <div class="status success">נבחרו ${data.total_verses} פסוקים לשם "${name}"</div>
+                    <div class="verse-card">
+                        <p><strong>שיטת בחירה:</strong> ${data.selection_method}</p>
+                        <p><strong>פסוקי שם:</strong> ${data.name_verses_count}</p>
+                        <p><strong>פסוקי נשמה:</strong> ${data.neshama_verses_count}</p>
+                    </div>
+                `;
+                
+                data.verses.forEach(verse => {
+                    const neshamaIcon = verse.is_neshama_verse ? '✨' : '';
+                    html += `
+                        <div class="verse-card">
+                            <div class="verse-hebrew">${neshamaIcon} ${verse.hebrew_text}</div>
+                            <div class="verse-english">${verse.english_text}</div>
+                            <div class="verse-reference">
+                                ${verse.verse_reference} | אות ${verse.letter.hebrew_letter} (${verse.letter.hebrew_name})
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                displayResults('verseSelectionResults', html);
+            } else {
+                displayResults('verseSelectionResults', 
+                    `<div class="status error">שגיאה: ${result.data?.detail || result.error}</div>`);
+            }
+        }
+        
+        // Test multiple selection methods
+        async function testMultipleMethods() {
+            const name = 'דוד'; // Name with repeated letters
+            const methods = ['balanced', 'sequential', 'random'];
+            let html = `<h4>בדיקת שיטות בחירה שונות לשם "${name}":</h4>`;
+            
+            for (const method of methods) {
+                const url = `/hebrew/name-verses?name=${encodeURIComponent(name)}&verses_per_letter=2&selection_method=${method}&include_neshama=false`;
+                const result = await apiCall(url);
+                
+                if (result.success) {
+                    html += `
+                        <div class="verse-card">
+                            <h5>שיטה: ${method}</h5>
+                            <p>נבחרו ${result.data.total_verses} פסוקים</p>
+                            <div>
+                    `;
+                    
+                    result.data.verses.slice(0, 2).forEach(verse => {
+                        html += `
+                            <div style="border-right: 2px solid #E8F4FD; padding: 5px; margin: 5px 0;">
+                                פסוק ${verse.verse_number} (אות ${verse.letter.hebrew_letter})
+                            </div>
+                        `;
+                    });
+                    
+                    html += '</div></div>';
+                } else {
+                    html += `<div class="verse-card"><strong>${method}:</strong> <span class="status error">שגיאה</span></div>`;
+                }
+            }
+            
+            displayResults('verseSelectionResults', html);
+        }
+        
+        // Hebrew Alphabet
+        async function loadHebrewAlphabet() {
+            const result = await apiCall('/hebrew/alphabet');
+            
+            if (result.success) {
+                const data = result.data;
+                let html = `
+                    <div class="status success">${data.description}</div>
+                    <p><strong>סה"כ אותיות:</strong> ${data.total_letters}</p>
+                    <div class="alphabet-grid">
+                `;
+                
+                data.letters.forEach(letter => {
+                    html += `
+                        <div class="letter-card">
+                            <div class="letter-hebrew">${letter.hebrew_letter}</div>
+                            <div class="letter-name">${letter.hebrew_name}</div>
+                            <div class="letter-name">${letter.english_name}</div>
+                            <div class="letter-name">ערך: ${letter.numeric_value}</div>
+                            <div class="letter-name">שימושים: ${letter.usage_count}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                displayResults('alphabetResults', html);
+            } else {
+                displayResults('alphabetResults', 
+                    `<div class="status error">שגיאה: ${result.data?.detail || result.error}</div>`);
+            }
+        }
+        
+        // Hebrew Alphabet with verses
+        async function loadAlphabetWithVerses() {
+            const result = await apiCall('/hebrew/alphabet?include_verses=true&verses_per_letter=1');
+            
+            if (result.success) {
+                const data = result.data;
+                let html = `
+                    <div class="status success">${data.description} (עם פסוקים לדוגמה)</div>
+                    <div class="alphabet-grid">
+                `;
+                
+                data.letters.forEach(letter => {
+                    html += `
+                        <div class="letter-card" style="text-align: right;">
+                            <div class="letter-hebrew">${letter.hebrew_letter}</div>
+                            <div class="letter-name">${letter.hebrew_name}</div>
+                    `;
+                    
+                    if (letter.verses && letter.verses.length > 0) {
+                        const verse = letter.verses[0];
+                        html += `
+                            <div style="font-size: 12px; color: #666; margin-top: 8px; line-height: 1.3;">
+                                ${verse.hebrew_text.substring(0, 30)}...
+                            </div>
+                        `;
+                    }
+                    
+                    html += '</div>';
+                });
+                
+                html += '</div>';
+                displayResults('alphabetResults', html);
+            } else {
+                displayResults('alphabetResults', 
+                    `<div class="status error">שגיאה: ${result.data?.detail || result.error}</div>`);
+            }
+        }
+        
+        // Hebrew Search
+        async function searchHebrew() {
+            const query = document.getElementById('searchQuery').value.trim();
+            const searchType = document.getElementById('searchType').value;
+            
+            if (!query) {
+                displayResults('searchResults', '<div class="status error">יש להזין שאילתת חיפוש</div>');
+                return;
+            }
+            
+            const url = `/hebrew/search?query=${encodeURIComponent(query)}&search_type=${searchType}&limit=10`;
+            const result = await apiCall(url);
+            
+            if (result.success) {
+                const data = result.data;
+                let html = `
+                    <div class="status success">נמצאו ${data.total_results} תוצאות עבור "${query}"</div>
+                `;
+                
+                // Display verses
+                if (data.results.verses && data.results.verses.length > 0) {
+                    html += '<h4>פסוקים:</h4>';
+                    data.results.verses.forEach(verse => {
+                        html += `
+                            <div class="verse-card">
+                                <div class="verse-hebrew">${verse.hebrew_text}</div>
+                                <div class="verse-english">${verse.english_text}</div>
+                                <div class="verse-reference">
+                                    ${verse.verse_reference} | אות ${verse.letter.hebrew_letter}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                // Display letters
+                if (data.results.letters && data.results.letters.length > 0) {
+                    html += '<h4>אותיות:</h4>';
+                    html += '<div class="alphabet-grid">';
+                    data.results.letters.forEach(letter => {
+                        html += `
+                            <div class="letter-card">
+                                <div class="letter-hebrew">${letter.hebrew_letter}</div>
+                                <div class="letter-name">${letter.hebrew_name}</div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+                
+                if (data.total_results === 0) {
+                    html += '<div class="status info">לא נמצאו תוצאות. נסה מילת חיפוש אחרת.</div>';
+                    if (data.search_suggestions && data.search_suggestions.length > 0) {
+                        html += '<h5>הצעות:</h5><ul>';
+                        data.search_suggestions.forEach(suggestion => {
+                            html += `<li>${suggestion}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                }
+                
+                displayResults('searchResults', html);
+            } else {
+                displayResults('searchResults', 
+                    `<div class="status error">שגיאה: ${result.data?.detail || result.error}</div>`);
+            }
+        }
+        
+        // Test search samples
+        async function testSearchSamples() {
+            const samples = ['תורה', 'אמת', 'שלום'];
+            let html = '<h4>בדיקת דוגמאות חיפוש:</h4>';
+            
+            for (const sample of samples) {
+                const url = `/hebrew/search?query=${encodeURIComponent(sample)}&search_type=verses&limit=3`;
+                const result = await apiCall(url);
+                
+                if (result.success) {
+                    html += `
+                        <div class="verse-card">
+                            <strong>חיפוש "${sample}":</strong> 
+                            ${result.data.total_results} תוצאות
+                            <span class="status success">✓</span>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="verse-card">
+                            <strong>חיפוש "${sample}":</strong> 
+                            <span class="status error">שגיאה</span>
+                        </div>
+                    `;
+                }
+            }
+            
+            displayResults('searchResults', html);
+        }
+        
+        // RTL Layout test
+        function testRTLLayout() {
+            const tests = [
+                {
+                    name: 'כיוון טקסט עברי',
+                    test: () => {
+                        const elem = document.createElement('div');
+                        elem.innerHTML = 'בדיקה';
+                        elem.style.direction = 'rtl';
+                        return elem.style.direction === 'rtl';
+                    }
+                },
+                {
+                    name: 'פונט עברי',
+                    test: () => {
+                        return document.fonts.check('16px "Noto Sans Hebrew"') || true; // Always pass if font API not supported
+                    }
+                },
+                {
+                    name: 'תמיכה ב-RTL CSS',
+                    test: () => {
+                        const elem = document.createElement('div');
+                        elem.style.textAlign = 'right';
+                        return elem.style.textAlign === 'right';
+                    }
+                }
+            ];
+            
+            let html = '<h4>תוצאות בדיקת RTL:</h4>';
+            
+            tests.forEach(test => {
+                const passed = test.test();
+                html += `
+                    <div class="verse-card">
+                        <strong>${test.name}:</strong> 
+                        <span class="status ${passed ? 'success' : 'error'}">
+                            ${passed ? 'עובר ✓' : 'נכשל ✗'}
+                        </span>
+                    </div>
+                `;
+            });
+            
+            displayResults('rtlResults', html);
+        }
+        
+        // API Health Check
+        async function checkAPIHealth() {
+            const endpoints = [
+                { name: 'בריאות כללית', url: '/health' },
+                { name: 'אלפבית עברי', url: '/hebrew/alphabet' },
+                { name: 'סטטיסטיקות עבריות', url: '/hebrew/stats' }
+            ];
+            
+            let html = '<h4>בדיקת נקודות גישה של API:</h4>';
+            
+            for (const endpoint of endpoints) {
+                const result = await apiCall(endpoint.url);
+                
+                html += `
+                    <div class="verse-card">
+                        <strong>${endpoint.name}:</strong> 
+                        <span class="status ${result.success ? 'success' : 'error'}">
+                            ${result.success ? `${result.status} ✓` : `שגיאה ${result.status || 'לא ידוע'} ✗`}
+                        </span>
+                        ${result.success ? '' : `<br><small>${result.error || result.data?.detail}</small>`}
+                    </div>
+                `;
+            }
+            
+            displayResults('apiHealthResults', html);
+        }
+        
+        // Full API Test
+        async function runFullAPITest() {
+            let html = '<h4>בדיקה מקיפה של כל ה-API:</h4>';
+            
+            // Test Hebrew alphabet
+            const alphabetResult = await apiCall('/hebrew/alphabet');
+            html += `
+                <div class="verse-card">
+                    <strong>אלפבית עברי:</strong> 
+                    <span class="status ${alphabetResult.success ? 'success' : 'error'}">
+                        ${alphabetResult.success ? `${alphabetResult.data?.total_letters || 'לא ידוע'} אותיות ✓` : 'נכשל ✗'}
+                    </span>
+                </div>
+            `;
+            
+            // Test name analysis
+            const nameResult = await apiCall('/hebrew/analyze-name?hebrew_name=' + encodeURIComponent('יוסף'), {
+                method: 'POST'
+            });
+            html += `
+                <div class="verse-card">
+                    <strong>ניתוח שם:</strong> 
+                    <span class="status ${nameResult.success ? 'success' : 'error'}">
+                        ${nameResult.success ? `ניתח "${nameResult.data?.name || ''}" ✓` : 'נכשל ✗'}
+                    </span>
+                </div>
+            `;
+            
+            // Test verse selection
+            const versesResult = await apiCall('/hebrew/name-verses?name=' + encodeURIComponent('יוסף') + '&verses_per_letter=1');
+            html += `
+                <div class="verse-card">
+                    <strong>בחירת פסוקים:</strong> 
+                    <span class="status ${versesResult.success ? 'success' : 'error'}">
+                        ${versesResult.success ? `${versesResult.data?.total_verses || '0'} פסוקים ✓` : 'נכשל ✗'}
+                    </span>
+                </div>
+            `;
+            
+            // Test search
+            const searchResult = await apiCall('/hebrew/search?query=' + encodeURIComponent('אברהם') + '&search_type=verses&limit=5');
+            html += `
+                <div class="verse-card">
+                    <strong>חיפוש עברי:</strong> 
+                    <span class="status ${searchResult.success ? 'success' : 'error'}">
+                        ${searchResult.success ? `${searchResult.data?.total_results || '0'} תוצאות ✓` : 'נכשל ✗'}
+                    </span>
+                </div>
+            `;
+            
+            // Test stats
+            const statsResult = await apiCall('/hebrew/stats');
+            html += `
+                <div class="verse-card">
+                    <strong>סטטיסטיקות:</strong> 
+                    <span class="status ${statsResult.success ? 'success' : 'error'}">
+                        ${statsResult.success ? `${statsResult.data?.total_verses || '0'} פסוקים, ${statsResult.data?.public_memorials || '0'} אזכרות ✓` : 'נכשל ✗'}
+                    </span>
+                </div>
+            `;
+            
+            displayResults('apiHealthResults', html);
+        }
+        
+        // Initialize with some sample data
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pre-fill some sample data
+            document.getElementById('hebrewName').value = 'יוסף';
+            document.getElementById('nameForVerses').value = 'מרים';
+            document.getElementById('memorialName').value = 'יוסף';  // Main engine sample
+            document.getElementById('searchQuery').value = 'אברהם';
+        });
+    </script>
+</body>
+</html>

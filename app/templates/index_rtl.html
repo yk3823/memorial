@@ -1,0 +1,544 @@
+{% extends "base_rtl.html" %}
+
+{% block title %}בית - אתר הנצחה{% endblock %}
+{% block description %}אתר הנצחה יהודי עם פסוקי תהילים קיט - צור דפי הנצחה אישיים עם פסוקים המתאימים לשם העברי של יקירך{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="hero-section text-center py-5 mb-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; color: white;">
+            <div class="container">
+                <h1 class="display-3 hebrew-title mb-4 fade-in-rtl">זכר לדורות</h1>
+                <p class="lead fs-4 mb-4">לכבוד זכרם של יקירינו - עם פסוקי תהילים קיט</p>
+                <p class="fs-5 mb-5" style="opacity: 0.9;">
+                    <i class="bi bi-book-fill me-2"></i>
+                    176 פסוקים המסודרים לפי האלפבית העברי - כל אות מכילה 8 פסוקים של תפילה וזיכרון
+                </p>
+                
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="name-input-section bg-white text-dark p-4 rounded-4 shadow-lg">
+                            <h3 class="hebrew-title mb-3">הזן שם עברי ליצירת הנצחה</h3>
+                            <div class="mb-3">
+                                <input type="text" class="form-control hebrew-name-input text-center" 
+                                       id="hebrewNameInput" placeholder="לדוגמה: יוסף, שרה, דוד..." 
+                                       autocomplete="off" dir="rtl">
+                                <div class="form-text">הזן שם בעברית - המערכת תמצא את הפסוקים המתאימים</div>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-lg" id="findVersesBtn">
+                                <i class="bi bi-search me-2"></i>מצא פסוקים
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-5">
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body text-center p-4">
+                <div class="mb-3" style="font-size: 3rem; color: #3498db;">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <h5 class="card-title hebrew-title">צור הנצחה חדשה</h5>
+                <p class="card-text">בחר שם עברי וקבל פסוקי תהילים קיט מותאמים אישית</p>
+                <a href="/he/memorial/new" class="btn btn-primary">התחל כעת</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body text-center p-4">
+                <div class="mb-3" style="font-size: 3rem; color: #e74c3c;">
+                    <i class="bi bi-heart-fill"></i>
+                </div>
+                <h5 class="card-title hebrew-title">עיון בהנצחות</h5>
+                <p class="card-text">חפש וגלה דפי הנצחה שנוצרו על ידי אחרים</p>
+                <a href="/he/search" class="btn btn-outline-secondary">חפש הנצחות</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="card-body text-center p-4">
+                <div class="mb-3" style="font-size: 3rem; color: #f39c12;">
+                    <i class="bi bi-book-fill"></i>
+                </div>
+                <h5 class="card-title hebrew-title">האלפבית העברי</h5>
+                <p class="card-text">למד על הקשר בין האותיות העבריות לפסוקי התהילים</p>
+                <a href="/he/alphabet" class="btn btn-outline-secondary">צפה באלפבית</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Verse Results Section (Hidden initially) -->
+<div id="verseResults" class="row mb-5" style="display: none;">
+    <div class="col-12">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0 hebrew-title">
+                    <i class="bi bi-bookmark-star-fill me-2"></i>
+                    פסוקי תהילים קיט עבור השם: <span id="selectedName"></span>
+                </h4>
+            </div>
+            <div class="card-body" id="versesContainer">
+                <!-- Verses will be populated here by JavaScript -->
+            </div>
+            <div class="card-footer bg-light">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <small class="text-muted">פסוקים נבחרו על פי האותיות בשם העברי</small>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <button type="button" class="btn btn-success" id="createMemorialBtn">
+                            <i class="bi bi-plus-circle me-2"></i>צור דף הנצחה
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="text-center hebrew-title mb-5">איך זה עובד?</h2>
+        <div class="row">
+            <div class="col-md-3 text-center mb-4">
+                <div class="step-icon mb-3" style="font-size: 4rem; color: #3498db;">
+                    <i class="bi bi-1-circle-fill"></i>
+                </div>
+                <h5 class="hebrew-title">הזן שם עברי</h5>
+                <p class="text-muted">כתב את השם העברי של יקירך</p>
+            </div>
+            <div class="col-md-3 text-center mb-4">
+                <div class="step-icon mb-3" style="font-size: 4rem; color: #27ae60;">
+                    <i class="bi bi-2-circle-fill"></i>
+                </div>
+                <h5 class="hebrew-title">המערכת מוצאת פסוקים</h5>
+                <p class="text-muted">לכל אות בשם נבחרים פסוקים מתהילים קיט</p>
+            </div>
+            <div class="col-md-3 text-center mb-4">
+                <div class="step-icon mb-3" style="font-size: 4rem; color: #e74c3c;">
+                    <i class="bi bi-3-circle-fill"></i>
+                </div>
+                <h5 class="hebrew-title">פסוקי נשמה</h5>
+                <p class="text-muted">נוספים פסוקים מיוחדים מהאותיות נ-ש-מ-ה</p>
+            </div>
+            <div class="col-md-3 text-center mb-4">
+                <div class="step-icon mb-3" style="font-size: 4rem; color: #9b59b6;">
+                    <i class="bi bi-4-circle-fill"></i>
+                </div>
+                <h5 class="hebrew-title">דף הנצחה מוכן</h5>
+                <p class="text-muted">דף הנצחה אישי ומיוחד מוכן לשיתוף</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Examples -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h3 class="hebrew-title mb-4">דוגמאות שמות נפוצים</h3>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card border-primary">
+                    <div class="card-body">
+                        <h5 class="card-title hebrew-title text-primary">שמות גברים</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-outline-primary btn-sm example-name" data-name="יוסף">יוסף</button>
+                            <button class="btn btn-outline-primary btn-sm example-name" data-name="דוד">דוד</button>
+                            <button class="btn btn-outline-primary btn-sm example-name" data-name="משה">משה</button>
+                            <button class="btn btn-outline-primary btn-sm example-name" data-name="אברהם">אברהם</button>
+                            <button class="btn btn-outline-primary btn-sm example-name" data-name="יעקב">יעקב</button>
+                            <button class="btn btn-outline-primary btn-sm example-name" data-name="יצחק">יצחק</button>
+                            <button class="btn btn-outline-primary btn-sm example-name" data-name="שמואל">שמואל</button>
+                            <button class="btn btn-outline-primary btn-sm example-name" data-name="בנימין">בנימין</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card border-danger">
+                    <div class="card-body">
+                        <h5 class="card-title hebrew-title text-danger">שמות נשים</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-outline-danger btn-sm example-name" data-name="שרה">שרה</button>
+                            <button class="btn btn-outline-danger btn-sm example-name" data-name="רבקה">רבקה</button>
+                            <button class="btn btn-outline-danger btn-sm example-name" data-name="רחל">רחל</button>
+                            <button class="btn btn-outline-danger btn-sm example-name" data-name="לאה">לאה</button>
+                            <button class="btn btn-outline-danger btn-sm example-name" data-name="מרים">מרים</button>
+                            <button class="btn btn-outline-danger btn-sm example-name" data-name="אסתר">אסתר</button>
+                            <button class="btn btn-outline-danger btn-sm example-name" data-name="רות">רות</button>
+                            <button class="btn btn-outline-danger btn-sm example-name" data-name="חנה">חנה</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- About Psalm 119 -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card bg-light border-0">
+            <div class="card-body p-5">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h3 class="hebrew-title mb-4">על תהילים קיט</h3>
+                        <p class="mb-3">
+                            תהילים קיט הוא הפרק הארוך ביותר בתנ"ך עם 176 פסוקים. 
+                            הפרק מחולק לפי סדר האלפבית העברי - כל אות מכילה 8 פסוקים.
+                        </p>
+                        <p class="mb-3">
+                            פסוקי התהילים עוסקים באהבת התורה, בקיום המצוות ובחיפוש אחר דרכי הצדק.
+                            הם מתאימים במיוחד להנצחה ולזכרון יקירינו.
+                        </p>
+                        <p class="mb-0">
+                            <strong>כל אות בשם העברי מביאה עמה פסוקים מיוחדים המתאימים לזכר האדם היקר.</strong>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-center">
+                            <div class="psalm-display p-4 bg-white rounded shadow">
+                                <div class="hebrew-display mb-3" style="font-size: 3rem; color: #3498db;">תהילים קיט</div>
+                                <div class="text-muted">176 פסוקים</div>
+                                <div class="text-muted">22 אותיות עבריות</div>
+                                <div class="text-muted">8 פסוקים לכל אות</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Memorials (if any) -->
+<div class="row">
+    <div class="col-12">
+        <h3 class="hebrew-title mb-4">הנצחות אחרונות</h3>
+        <div id="recentMemorials" class="row">
+            <!-- Recent memorials will be loaded here -->
+            <div class="col-12 text-center py-4">
+                <p class="text-muted">טוען הנצחות אחרונות...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const hebrewNameInput = document.getElementById('hebrewNameInput');
+    const findVersesBtn = document.getElementById('findVersesBtn');
+    const verseResults = document.getElementById('verseResults');
+    const versesContainer = document.getElementById('versesContainer');
+    const selectedNameSpan = document.getElementById('selectedName');
+    const createMemorialBtn = document.getElementById('createMemorialBtn');
+    const exampleNameButtons = document.querySelectorAll('.example-name');
+    
+    let currentVerseData = null;
+    
+    // Handle Hebrew name input validation
+    hebrewNameInput.addEventListener('input', function() {
+        const name = this.value.trim();
+        const validation = HebrewMemorialApp.validateHebrewName(name);
+        
+        if (name && !validation.valid) {
+            this.classList.add('is-invalid');
+            HebrewMemorialApp.showError(validation.message);
+        } else {
+            this.classList.remove('is-invalid');
+        }
+        
+        // Enable/disable button based on input
+        findVersesBtn.disabled = !name || !validation.valid;
+    });
+    
+    // Handle Enter key in input
+    hebrewNameInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !findVersesBtn.disabled) {
+            findVersesBtn.click();
+        }
+    });
+    
+    // Handle find verses button click
+    findVersesBtn.addEventListener('click', async function() {
+        const hebrewName = hebrewNameInput.value.trim();
+        
+        if (!hebrewName) {
+            HebrewMemorialApp.showError('יש להזין שם עברי');
+            hebrewNameInput.focus();
+            return;
+        }
+        
+        const validation = HebrewMemorialApp.validateHebrewName(hebrewName);
+        if (!validation.valid) {
+            HebrewMemorialApp.showError(validation.message);
+            hebrewNameInput.focus();
+            return;
+        }
+        
+        await findVersesForName(hebrewName);
+    });
+    
+    // Handle example name buttons
+    exampleNameButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const name = this.dataset.name;
+            hebrewNameInput.value = name;
+            hebrewNameInput.dispatchEvent(new Event('input'));
+            findVersesForName(name);
+        });
+    });
+    
+    // Handle create memorial button
+    createMemorialBtn.addEventListener('click', function() {
+        if (currentVerseData) {
+            // Store verse data in sessionStorage for the memorial creation page
+            sessionStorage.setItem('memorialVerseData', JSON.stringify(currentVerseData));
+            const nameParam = currentVerseData.name || currentVerseData.original_name || '';
+            window.location.href = '/he/memorial/new?name=' + encodeURIComponent(nameParam);
+        }
+    });
+    
+    // Main function to find verses for a Hebrew name
+    async function findVersesForName(hebrewName) {
+        try {
+            HebrewMemorialApp.showLoading(findVersesBtn, 'מחפש פסוקים...');
+            
+            // Call API to get verses for the name
+            const data = await HebrewMemorialApp.getVersesForName(hebrewName, {
+                versesPerLetter: 1,
+                includeNeshama: true,
+                selectionMethod: 'balanced'
+            });
+            
+            currentVerseData = data;
+            displayVerseResults(data);
+            
+            // Fix: Use correct API response structure from memorial-verses endpoint
+            const totalVerses = data.summary ? data.summary.total_verses : (data.total_verses || 0);
+            HebrewMemorialApp.showSuccess(`נמצאו ${totalVerses} פסוקים עבור השם "${hebrewName}"`);
+            
+        } catch (error) {
+            console.error('Error finding verses:', error);
+            
+            // More specific error handling
+            if (error.message && error.message.includes('Cannot read properties of undefined')) {
+                HebrewMemorialApp.showError('שגיאה במבנה התשובה מהשרת. אנא נסה שנית או פנה לתמיכה טכנית.');
+            } else if (error.status === 422) {
+                HebrewMemorialApp.showError('שם לא תקין - יש להזין רק אותיות עבריות');
+            } else if (error.status === 404) {
+                HebrewMemorialApp.showError('לא נמצאו פסוקים לשם זה');
+            } else if (error.status >= 500) {
+                HebrewMemorialApp.showError('שגיאת שרת. אנא נסה שנית מאוחר יותר.');
+            } else {
+                HebrewMemorialApp.showError('שגיאה בחיפוש פסוקים. אנא נסה שנית.');
+            }
+        } finally {
+            HebrewMemorialApp.hideLoading(findVersesBtn);
+        }
+    }
+    
+    // Display verse results - handles the new memorial-verses API format
+    function displayVerseResults(data) {
+        // Handle the new API response format from memorial-verses endpoint
+        const hebrewName = data.hebrew_name || data.name || data.original_name || '';
+        selectedNameSpan.textContent = hebrewName;
+        
+        let html = '';
+        
+        // Get data from the new format
+        const summary = data.summary || {};
+        const sections = data.sections || [];
+        const totalVerses = summary.total_verses || 0;
+        const nameVerseCount = summary.name_verses_count || 0;
+        const neshamaVerseCount = summary.neshama_verses_count || 0;
+        const nameLetters = summary.name_letters || [];
+        const uniqueLetters = summary.unique_letters || [];
+        
+        // Display name analysis
+        html += `
+            <div class="alert alert-info mb-4">
+                <h5 class="alert-heading hebrew-title">ניתוח השם "${hebrewName}"</h5>
+                <p class="mb-2">אותיות השם: <strong>${nameLetters.join(' - ')}</strong></p>
+                <p class="mb-2">אותיות ייחודיות: <strong>${uniqueLetters.join(', ')}</strong></p>
+                <p class="mb-2">פסוקים לשם: <strong>${nameVerseCount}</strong></p>
+                <p class="mb-2">פסוקי נשמה: <strong>${neshamaVerseCount}</strong></p>
+                <p class="mb-0">סה"כ פסוקים: <strong>${totalVerses}</strong></p>
+            </div>
+        `;
+        
+        // Separate sections into name sections and neshama sections
+        const nameSections = sections.filter(section => !section.is_neshama);
+        const neshamaSections = sections.filter(section => section.is_neshama);
+        
+        // Display name sections with ALL verses
+        if (nameSections && nameSections.length > 0) {
+            html += `
+                <h5 class="hebrew-title mb-3">
+                    <i class="bi bi-bookmark-fill me-2"></i>
+                    פסוקים לפי אותיות השם
+                </h5>
+            `;
+            
+            nameSections.forEach((section) => {
+                html += `
+                    <div class="section-container mb-4">
+                        <h6 class="section-title hebrew-title">
+                            ${section.section_title}
+                            <span class="badge bg-primary ms-2">${section.verse_count} פסוקים</span>
+                        </h6>
+                `;
+                
+                // Display ALL verses in this section
+                section.verses.forEach((verse, index) => {
+                    html += createVerseCard(verse, index + 1, section.letter);
+                });
+                
+                html += `</div>`;
+            });
+        }
+        
+        // Display neshama sections with ALL verses
+        if (neshamaSections && neshamaSections.length > 0) {
+            html += `
+                <div class="neshama-section mt-4">
+                    <h5 class="neshama-title">
+                        <i class="bi bi-star-fill me-2"></i>
+                        פסוקי נשמה מיוחדים
+                    </h5>
+                    <p class="neshama-subtitle">פסוקים מהאותיות נ-ש-מ-ה לכבוד נשמת יקירנו</p>
+            `;
+            
+            neshamaSections.forEach((section) => {
+                html += `
+                    <div class="section-container mb-4">
+                        <h6 class="section-title hebrew-title">
+                            ${section.section_title}
+                            <span class="badge bg-success ms-2">${section.verse_count} פסוקים</span>
+                        </h6>
+                `;
+                
+                // Display ALL verses in this neshama section - same format as name verses
+                section.verses.forEach((verse, index) => {
+                    html += createVerseCard(verse, index + 1, section.letter);
+                });
+                
+                html += `</div>`;
+            });
+            
+            html += `</div>`;
+        }
+        
+        // Handle case where no sections are found
+        if (!sections || sections.length === 0) {
+            html += `
+                <div class="alert alert-warning">
+                    <h5 class="alert-heading">לא נמצאו פסוקים</h5>
+                    <p>לא נמצאו פסוקים עבור השם "${hebrewName}". אנא נסה שם אחר.</p>
+                </div>
+            `;
+        }
+        
+        versesContainer.innerHTML = html;
+        verseResults.style.display = 'block';
+        
+        // Scroll to results
+        verseResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    // Create verse card HTML
+    function createVerseCard(verse, index, letterInfo) {
+        const verseReference = verse.verse_reference || `תהילים קיט:${verse.verse_number || '?'}`;
+        const hebrewLetter = letterInfo ? letterInfo.hebrew_letter : (verse.letter ? verse.letter.hebrew_letter : '?');
+        
+        return `
+            <div class="verse-container mb-3">
+                <div class="verse-header">
+                    <div class="verse-reference">${verseReference}</div>
+                    <div class="hebrew-letter-indicator">${hebrewLetter}</div>
+                </div>
+                ${createVerseContent(verse)}
+                ${verse.selection_reason ? `
+                <div class="mt-2">
+                    <small class="text-muted">${verse.selection_reason}</small>
+                </div>
+                ` : ''}
+            </div>
+        `;
+    }
+    
+    // Create verse content HTML
+    function createVerseContent(verse) {
+        const hebrewText = verse.hebrew_text || 'טקסט עברי לא זמין';
+        const transliteration = verse.transliteration || '';
+        const englishText = verse.english_text || 'English text not available';
+        
+        return `
+            <div class="verse-hebrew-text">
+                ${hebrewText}
+            </div>
+            ${transliteration ? `
+            <div class="verse-transliteration">
+                ${transliteration}
+            </div>
+            ` : ''}
+            <div class="verse-english">
+                "${englishText}"
+            </div>
+        `;
+    }
+    
+    // Load recent memorials
+    async function loadRecentMemorials() {
+        try {
+            // This would call an API endpoint to get recent memorials
+            // For now, show a message
+            document.getElementById('recentMemorials').innerHTML = `
+                <div class="col-12 text-center py-4">
+                    <p class="text-muted">אין הנצחות אחרונות להציג כרגע</p>
+                    <a href="/he/memorial/new" class="btn btn-primary">צור את ההנצחה הראשונה</a>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Error loading recent memorials:', error);
+        }
+    }
+    
+    // Initialize the page
+    function initializePage() {
+        // Focus on name input
+        hebrewNameInput.focus();
+        
+        // Load recent memorials
+        loadRecentMemorials();
+        
+        // Add animation classes
+        document.querySelectorAll('.card').forEach((card, index) => {
+            setTimeout(() => {
+                card.classList.add('fade-in-rtl');
+            }, index * 100);
+        });
+    }
+    
+    // Initialize when page loads
+    initializePage();
+});
+</script>
+{% endblock %}

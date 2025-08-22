@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block title %}Memorial Website - Honor and Remember Your Loved Ones{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="bg-primary text-white rounded p-5 text-center">
+            <i class="bi bi-heart-fill display-1 mb-4 opacity-75"></i>
+            <h1 class="display-4 mb-3">Memorial Website</h1>
+            <p class="lead mb-4">Honor and remember your loved ones with beautiful, lasting memorial pages</p>
+            {% if current_user %}
+            <div class="d-flex gap-3 justify-content-center">
+                <a href="/memorials" class="btn btn-light btn-lg">
+                    <i class="bi bi-person-hearts me-2"></i>My Memorials
+                </a>
+                <a href="/memorials/create" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-plus-circle me-2"></i>Create Memorial
+                </a>
+            </div>
+            {% else %}
+            <div class="d-flex gap-3 justify-content-center">
+                <a href="/register" class="btn btn-light btn-lg">
+                    <i class="bi bi-person-plus me-2"></i>Get Started
+                </a>
+                <a href="/login" class="btn btn-outline-light btn-lg">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">Create Meaningful Memorials</h2>
+        <p class="text-center text-muted mb-5">Our platform helps you preserve memories and honor lives with dignity</p>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                    <i class="bi bi-person-hearts display-6"></i>
+                </div>
+                <h5 class="mt-3">Personal Memorial Pages</h5>
+                <p class="text-muted">Create beautiful, personalized memorial pages with photos, life stories, and memories</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                    <i class="bi bi-calendar-heart display-6"></i>
+                </div>
+                <h5 class="mt-3">Hebrew Calendar Integration</h5>
+                <p class="text-muted">Automatic yahrzeit calculations and reminders based on Hebrew calendar dates</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                    <i class="bi bi-envelope-heart display-6"></i>
+                </div>
+                <h5 class="mt-3">Notification System</h5>
+                <p class="text-muted">Email and WhatsApp reminders for yahrzeit dates and memorial anniversaries</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                    <i class="bi bi-geo-alt display-6"></i>
+                </div>
+                <h5 class="mt-3">Grave Location</h5>
+                <p class="text-muted">GPS coordinates and directions to grave sites with optional video guides</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="bg-secondary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                    <i class="bi bi-book display-6"></i>
+                </div>
+                <h5 class="mt-3">Psalm 119 Verses</h5>
+                <p class="text-muted">Automatically generated verses based on Hebrew names with special verses</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <div class="bg-dark text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                    <i class="bi bi-shield-check display-6"></i>
+                </div>
+                <h5 class="mt-3">Privacy & Security</h5>
+                <p class="text-muted">Control who can view and contribute to each memorial with flexible privacy settings</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="bg-light rounded p-5">
+            <h2 class="text-center mb-4">How It Works</h2>
+            <div class="row">
+                <div class="col-md-3 text-center mb-4">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="fw-bold">1</span>
+                    </div>
+                    <h5>Create Account</h5>
+                    <p class="text-muted">Sign up for your free account in minutes</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="fw-bold">2</span>
+                    </div>
+                    <h5>Add Details</h5>
+                    <p class="text-muted">Enter your loved one's information and upload photos</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="fw-bold">3</span>
+                    </div>
+                    <h5>Customize</h5>
+                    <p class="text-muted">Add biography, photos, and memorial settings</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                        <span class="fw-bold">4</span>
+                    </div>
+                    <h5>Share</h5>
+                    <p class="text-muted">Share the memorial with family and friends</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+{% if not current_user %}
+<div class="row mb-5">
+    <div class="col-lg-8 mx-auto text-center">
+        <h2 class="mb-3">Ready to Create a Memorial?</h2>
+        <p class="lead text-muted mb-4">Start preserving memories and honoring your loved ones today</p>
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="/register" class="btn btn-primary btn-lg">
+                <i class="bi bi-person-plus me-2"></i>Create Free Account
+            </a>
+            <a href="/demo" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-play-circle me-2"></i>View Demo
+            </a>
+        </div>
+        <p class="small text-muted mt-3">
+            <i class="bi bi-shield-check me-1"></i>
+            Free forever. No credit card required.
+        </p>
+    </div>
+</div>
+{% endif %}
+
+<!-- API Test Section (for development) -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-tools me-2"></i>API Testing Tools
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Quick tools for testing the Memorial Website API endpoints</p>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-outline-info w-100" onclick="testSystemHealth()">
+                            <i class="bi bi-heart-pulse me-2"></i>Test System Health
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-outline-success w-100" onclick="testUserAuth()">
+                            <i class="bi bi-person-check me-2"></i>Test User Auth
+                        </button>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <button class="btn btn-outline-primary w-100" onclick="testMemorialAPI()">
+                            <i class="bi bi-person-hearts me-2"></i>Test Memorial API
+                        </button>
+                    </div>
+                </div>
+                <div id="apiTestResults" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// API Testing Functions
+async function testSystemHealth() {
+    const resultDiv = document.getElementById('apiTestResults');
+    resultDiv.innerHTML = '<div class="alert alert-info">Testing system health...</div>';
+    
+    try {
+        const response = await fetch('/api/v1/health');
+        const data = await response.json();
+        
+        if (response.ok) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6>✅ System Health Check Passed</h6>
+                    <pre class="mb-0">${JSON.stringify(data, null, 2)}</pre>
+                </div>
+            `;
+        } else {
+            throw new Error(`HTTP ${response.status}`);
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <h6>❌ System Health Check Failed</h6>
+                <p class="mb-0">Error: ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+async function testUserAuth() {
+    const resultDiv = document.getElementById('apiTestResults');
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+        resultDiv.innerHTML = `
+            <div class="alert alert-warning">
+                <h6>⚠️ No Authentication Token</h6>
+                <p class="mb-0">Please <a href="/login">log in</a> first to test authenticated endpoints.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    resultDiv.innerHTML = '<div class="alert alert-info">Testing user authentication...</div>';
+    
+    try {
+        const response = await fetch('/api/v1/auth/me', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await response.json();
+        
+        if (response.ok) {
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6>✅ User Authentication Test Passed</h6>
+                    <p><strong>User:</strong> ${data.first_name} ${data.last_name}</p>
+                    <p><strong>Email:</strong> ${data.email}</p>
+                    <p class="mb-0"><strong>Status:</strong> ${data.is_verified ? 'Verified' : 'Unverified'}</p>
+                </div>
+            `;
+        } else {
+            throw new Error(`HTTP ${response.status}: ${data.detail || 'Unknown error'}`);
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <h6>❌ User Authentication Test Failed</h6>
+                <p class="mb-0">Error: ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+async function testMemorialAPI() {
+    const resultDiv = document.getElementById('apiTestResults');
+    const token = localStorage.getItem('access_token');
+    
+    if (!token) {
+        resultDiv.innerHTML = `
+            <div class="alert alert-warning">
+                <h6>⚠️ No Authentication Token</h6>
+                <p class="mb-0">Please <a href="/login">log in</a> first to test memorial endpoints.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    resultDiv.innerHTML = '<div class="alert alert-info">Testing memorial API...</div>';
+    
+    try {
+        const response = await fetch('/api/v1/memorials', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const data = await response.json();
+        
+        if (response.ok) {
+            const memorials = data.items || data;
+            const memorialCount = Array.isArray(memorials) ? memorials.length : 0;
+            
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <h6>✅ Memorial API Test Passed</h6>
+                    <p><strong>Total Memorials:</strong> ${memorialCount}</p>
+                    ${memorialCount > 0 ? `
+                        <p><strong>Recent Memorial:</strong> ${memorials[0].deceased_name_english || memorials[0].deceased_name_hebrew || 'Unnamed'}</p>
+                    ` : '<p>No memorials found. <a href="/memorials/create">Create one now</a>.</p>'}
+                </div>
+            `;
+        } else {
+            throw new Error(`HTTP ${response.status}: ${data.detail || 'Unknown error'}`);
+        }
+    } catch (error) {
+        resultDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <h6>❌ Memorial API Test Failed</h6>
+                <p class="mb-0">Error: ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// Auto-test system health on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Uncomment to auto-test on load
+    // testSystemHealth();
+});
+</script>
+{% endblock %}

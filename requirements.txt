@@ -1,0 +1,70 @@
+# FastAPI and related dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+jinja2==3.1.2
+python-jose[cryptography]==3.3.0
+
+# Database
+sqlalchemy==2.0.23
+alembic==1.13.1
+asyncpg==0.29.0
+
+# Authentication and Security
+passlib[bcrypt]==1.7.4
+python-jose==3.3.0
+PyJWT==2.8.0
+cryptography==41.0.7
+python-multipart==0.0.6
+
+# Validation and Serialization
+pydantic==2.5.0
+pydantic-settings==2.0.3
+email-validator==2.1.0
+
+# HTTP Client for external APIs
+httpx==0.25.2
+requests==2.31.0
+
+# Date/Time handling and Hebrew Calendar
+python-dateutil==2.8.2
+pytz==2023.3
+convertdate==2.4.0
+hijri-converter==2.3.1
+
+# File handling and media
+pillow==10.1.0
+python-magic==0.4.27
+aiofiles==23.2.1
+
+# Email services
+fastapi-mail==1.4.1
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+httpx==0.25.2
+factory-boy==3.3.0
+
+# Development tools
+black==23.11.0
+flake8==6.1.0
+isort==5.12.0
+mypy==1.7.1
+
+# Configuration and environment
+python-decouple==3.8
+python-dotenv==1.0.0
+
+# Rate limiting (using in-memory storage)
+slowapi==0.1.9
+
+# Logging and monitoring
+structlog==23.2.0
+
+# Bootstrap and frontend utilities (served statically)
+# Note: Bootstrap will be included via CDN in templates
+
+# Production server
+gunicorn==21.2.0
