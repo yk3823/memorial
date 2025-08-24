@@ -81,6 +81,78 @@
                             </div>
                         </div>
                         
+                        <!-- Family Information Section -->
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="hebrew-text text-muted mt-3 mb-3">
+                                    <i class="bi bi-people me-2"></i>פרטי משפחה (אופציונלי)
+                                </h5>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- Spouse Name -->
+                                <div class="mb-3">
+                                    <label for="spouse_name" class="form-label hebrew-text">
+                                        <i class="bi bi-heart me-1"></i>רעייתו/בעלה (אופציונלי)
+                                    </label>
+                                    <input type="text" class="form-control hebrew-input" 
+                                           id="spouse_name" name="spouse_name" 
+                                           placeholder="הזן שם הבן/בת הזוג" dir="rtl" tabindex="5">
+                                    <div class="form-text hebrew-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        שם הבן/בת זוג של הנפטר/ת
+                                    </div>
+                                    <div class="invalid-feedback hebrew-text" id="spouse_name-error"></div>
+                                </div>
+                                
+                                <!-- Parents Names -->
+                                <div class="mb-3">
+                                    <label for="parents_names" class="form-label hebrew-text">
+                                        <i class="bi bi-person-hearts me-1"></i>הוריו (אופציונלי)
+                                    </label>
+                                    <input type="text" class="form-control hebrew-input" 
+                                           id="parents_names" name="parents_names" 
+                                           placeholder="הזן שמות שני ההורים" dir="rtl" tabindex="7">
+                                    <div class="form-text hebrew-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        שמות שני ההורים של הנפטר/ת (למשל: "יוסף ומרים")
+                                    </div>
+                                    <div class="invalid-feedback hebrew-text" id="parents_names-error"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- Children Names -->
+                                <div class="mb-3">
+                                    <label for="children_names" class="form-label hebrew-text">
+                                        <i class="bi bi-person-plus me-1"></i>ילדיו (אופציונלי)
+                                    </label>
+                                    <textarea class="form-control hebrew-input" id="children_names" name="children_names" 
+                                              rows="2" placeholder="הזן שמות הילדים" dir="rtl" tabindex="6"></textarea>
+                                    <div class="form-text hebrew-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        שמות הילדים של הנפטר/ת (כל שם בשורה נפרדת או מופרדים בפסיקים)
+                                    </div>
+                                    <div class="invalid-feedback hebrew-text" id="children_names-error"></div>
+                                </div>
+                                
+                                <!-- Family Names -->
+                                <div class="mb-3">
+                                    <label for="family_names" class="form-label hebrew-text">
+                                        <i class="bi bi-people-fill me-1"></i>משפחות (אופציונלי)
+                                    </label>
+                                    <textarea class="form-control hebrew-input" id="family_names" name="family_names" 
+                                              rows="2" placeholder="הזן שמות משפחות קרובות" dir="rtl" tabindex="8"></textarea>
+                                    <div class="form-text hebrew-text">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        שמות משפחות קרובות או בני משפחה נוספים (אחים, אחיות, דודים וכו')
+                                    </div>
+                                    <div class="invalid-feedback hebrew-text" id="family_names-error"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- English Names (Optional) -->
                         <div class="row">
                             <div class="col-md-6">
@@ -90,7 +162,7 @@
                                     </label>
                                     <input type="text" class="form-control" 
                                            id="english_first_name" name="english_first_name" 
-                                           placeholder="First name" dir="ltr" tabindex="5">
+                                           placeholder="First name" dir="ltr" tabindex="9">
                                     <div class="invalid-feedback hebrew-text" id="english_first_name-error"></div>
                                 </div>
                             </div>
@@ -101,7 +173,7 @@
                                     </label>
                                     <input type="text" class="form-control" 
                                            id="english_last_name" name="english_last_name" 
-                                           placeholder="Last name" dir="ltr" tabindex="6">
+                                           placeholder="Last name" dir="ltr" tabindex="10">
                                     <div class="invalid-feedback hebrew-text" id="english_last_name-error"></div>
                                 </div>
                             </div>
@@ -236,7 +308,7 @@
                                    accept="video/*">
                             <div class="form-text hebrew-text">
                                 <i class="bi bi-info-circle me-1"></i>
-                                גודל מקסימלי: 50MB. פורמטים נתמכים: MP4, AVI, MOV
+                                גודל מקסימלי: 50MB, משך מקסימלי: 3 דקות. פורמטים נתמכים: MP4, AVI, MOV
                             </div>
                             <div class="invalid-feedback hebrew-text" id="video_upload-error"></div>
                         </div>
@@ -636,28 +708,63 @@ document.addEventListener('DOMContentLoaded', function() {
         HebrewMemorialApp.showSuccess('תמונת הפרופיל הוגדרה בהצלחה');
     }
     
-    // Video upload validation
+    // Video upload validation with duration check
     const videoInput = document.getElementById('video_upload');
     if (videoInput) {
         videoInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const maxSize = 50 * 1024 * 1024; // 50MB
+                const maxDuration = 180; // 3 minutes in seconds
                 const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/quicktime'];
                 
+                // Check file size
                 if (file.size > maxSize) {
                     HebrewMemorialApp.showError('גודל הסרטון חייב להיות קטן מ-50MB');
                     e.target.value = '';
                     return;
                 }
                 
+                // Check file type
                 if (!allowedTypes.includes(file.type)) {
                     HebrewMemorialApp.showError('פורמט הסרטון לא נתמך. השתמש ב-MP4, AVI או MOV');
                     e.target.value = '';
                     return;
                 }
                 
-                HebrewMemorialApp.showSuccess('הסרטון נבחר בהצלחה');
+                // Check video duration using HTML5 video element
+                const video = document.createElement('video');
+                video.preload = 'metadata';
+                
+                video.onloadedmetadata = function() {
+                    window.URL.revokeObjectURL(video.src);
+                    
+                    if (video.duration > maxDuration) {
+                        const minutes = Math.floor(video.duration / 60);
+                        const seconds = Math.floor(video.duration % 60);
+                        HebrewMemorialApp.showError(
+                            `משך הסרטון (${minutes}:${seconds.toString().padStart(2, '0')}) חורג מהמגבלה של 3 דקות`
+                        );
+                        e.target.value = '';
+                        return;
+                    }
+                    
+                    // All validations passed
+                    const durationMinutes = Math.floor(video.duration / 60);
+                    const durationSeconds = Math.floor(video.duration % 60);
+                    HebrewMemorialApp.showSuccess(
+                        `הסרטון נבחר בהצלחה (משך: ${durationMinutes}:${durationSeconds.toString().padStart(2, '0')})`
+                    );
+                };
+                
+                video.onerror = function() {
+                    window.URL.revokeObjectURL(video.src);
+                    HebrewMemorialApp.showError('לא ניתן לקרוא את הסרטון. אנא בדוק שהקובץ תקין');
+                    e.target.value = '';
+                };
+                
+                // Start loading video metadata
+                video.src = window.URL.createObjectURL(file);
             }
         });
     }
@@ -671,20 +778,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const locationStatus = document.getElementById('location-status');
     const locationStatusText = document.getElementById('location-status-text');
     
-    // Get current user location
+    // Get current user location with improved permission handling
     if (currentLocationBtn) {
         currentLocationBtn.addEventListener('click', async function() {
+            // Check if geolocation is supported
             if (!navigator.geolocation) {
                 HebrewMemorialApp.showError('הדפדפן שלך לא תומך בזיהוי מיקום');
                 return;
             }
             
+            // Check if site is served over HTTPS (required for geolocation in production)
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                HebrewMemorialApp.showError('זיהוי מיקום דורש חיבור מאובטח (HTTPS). אנא גש לאתר דרך https://');
+                return;
+            }
+            
             // Show loading state
             const originalContent = currentLocationBtn.innerHTML;
-            currentLocationBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>מזהה מיקום...';
+            currentLocationBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>בודק הרשאות...';
             currentLocationBtn.disabled = true;
             
             try {
+                // Check current permission state using Permissions API
+                if ('permissions' in navigator) {
+                    const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+                    
+                    if (permissionStatus.state === 'denied') {
+                        throw new Error('PERMISSION_DENIED_PERMANENTLY');
+                    } else if (permissionStatus.state === 'prompt') {
+                        // Show user-friendly message about permission request
+                        currentLocationBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>אנא אפשר גישה למיקום...';
+                        showLocationStatus('הדפדפן מבקש הרשאה לגישה למיקום. אנא לחץ "אפשר" בהודעה שתופיע.', 'info');
+                    }
+                } else {
+                    // Fallback for older browsers
+                    currentLocationBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>מבקש הרשאת מיקום...';
+                    showLocationStatus('מבקש הרשאה לגישה למיקום...', 'info');
+                }
+                
+                // Update loading message for actual location detection
+                setTimeout(() => {
+                    currentLocationBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>מזהה מיקום...';
+                }, 1000);
+                
                 const position = await getCurrentPosition();
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
@@ -709,22 +845,66 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Geolocation error:', error);
                 let errorMessage = 'לא ניתן לזהות את המיקום';
                 
-                if (error.code === 1) {
-                    errorMessage = 'אנא אפשר גישה למיקום בהגדרות הדפדפן';
+                // Enhanced error handling based on error type and code
+                if (error.message === 'PERMISSION_DENIED_PERMANENTLY') {
+                    errorMessage = 'הרשאת המיקום נחסמה לצמיתות. לאפשר מחדש: לחץ על סמל המנעול בכתובת האתר ← מיקום ← אפשר';
+                } else if (error.code === 1) {
+                    // PERMISSION_DENIED
+                    if ('permissions' in navigator) {
+                        errorMessage = 'הרשאת מיקום נדחתה. לאפשר: לחץ על סמל המנעול בכתובת האתר ← מיקום ← אפשר, או רענן את הדף ונסה שוב';
+                    } else {
+                        errorMessage = 'אנא אפשר גישה למיקום בהגדרות הדפדפן ורענן את הדף';
+                    }
                 } else if (error.code === 2) {
-                    errorMessage = 'המיקום לא זמין כרגע';
+                    // POSITION_UNAVAILABLE
+                    errorMessage = 'המיקום לא זמין כרגע. ודא שה-GPS מופעל או נסה שוב במיקום אחר';
                 } else if (error.code === 3) {
-                    errorMessage = 'זיהוי המיקום לקח יותר מדי זמן';
+                    // TIMEOUT
+                    errorMessage = 'זיהוי המיקום לקח יותר מדי זמן. ודא שה-GPS מופעל ונסה שוב';
+                } else if (error.name === 'NotAllowedError') {
+                    errorMessage = 'הרשאת מיקום נדחתה. אנא אפשר גישה למיקום בהודעה שמופיעה או בהגדרות הדפדפן';
+                } else if (error.name === 'NotSupportedError') {
+                    errorMessage = 'זיהוי מיקום לא נתמך בדפדפן או במכשיר הנוכחי';
                 }
                 
                 HebrewMemorialApp.showError(errorMessage);
                 showLocationStatus(errorMessage, 'error');
+                
+                // Provide additional help for permission issues
+                if (error.code === 1 || error.message === 'PERMISSION_DENIED_PERMANENTLY') {
+                    setTimeout(() => {
+                        showLocationHelp();
+                    }, 2000);
+                }
+                
             } finally {
                 // Restore button state
                 currentLocationBtn.innerHTML = originalContent;
                 currentLocationBtn.disabled = false;
             }
         });
+    }
+    
+    // Helper function to show location permission help
+    function showLocationHelp() {
+        const helpHtml = `
+            <div class="alert alert-info alert-dismissible fade show hebrew-text mt-3" role="alert" id="location-help">
+                <h6><i class="bi bi-info-circle me-2"></i>כיצד לאפשר גישה למיקום:</h6>
+                <ol class="mb-2">
+                    <li>לחץ על סמל המנעול (🔒) או האינפורמציה (ℹ️) בכתובת האתר</li>
+                    <li>בחר "מיקום" או "Location"</li>
+                    <li>שנה מ"חסום" ל"אפשר"</li>
+                    <li>רענן את הדף ונסה שוב</li>
+                </ol>
+                <small>או שהזן את המיקום ידנית בשדה למעלה</small>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+        
+        const locationSection = document.querySelector('#location-status').closest('.mb-4');
+        if (locationSection && !document.getElementById('location-help')) {
+            locationSection.insertAdjacentHTML('beforeend', helpHtml);
+        }
     }
     
     // Map dropdown options
@@ -869,16 +1049,46 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Helper function to get current position as Promise
+    // Helper function to get current position as Promise with enhanced error handling
     function getCurrentPosition() {
         return new Promise((resolve, reject) => {
             const options = {
                 enableHighAccuracy: true,
-                timeout: 10000, // 10 seconds
-                maximumAge: 300000 // 5 minutes
+                timeout: 15000, // 15 seconds - increased timeout for better reliability
+                maximumAge: 60000 // 1 minute - shorter cache time for more accurate results
             };
             
-            navigator.geolocation.getCurrentPosition(resolve, reject, options);
+            // Enhanced error handling wrapper
+            function onSuccess(position) {
+                // Validate position data
+                if (position && position.coords && 
+                    typeof position.coords.latitude === 'number' && 
+                    typeof position.coords.longitude === 'number' &&
+                    !isNaN(position.coords.latitude) && 
+                    !isNaN(position.coords.longitude)) {
+                    resolve(position);
+                } else {
+                    reject(new Error('Invalid position data received'));
+                }
+            }
+            
+            function onError(error) {
+                // Add more context to the error
+                console.error('Geolocation API error:', {
+                    code: error.code,
+                    message: error.message,
+                    timestamp: new Date().toISOString()
+                });
+                reject(error);
+            }
+            
+            try {
+                navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
+            } catch (error) {
+                // Handle synchronous errors
+                console.error('Synchronous geolocation error:', error);
+                reject(error);
+            }
         });
     }
     
@@ -975,14 +1185,87 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
     
+    // Check location permission status on page load and update UI accordingly
+    async function checkLocationPermissionStatus() {
+        if (!navigator.geolocation) {
+            return;
+        }
+        
+        try {
+            if ('permissions' in navigator) {
+                const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+                updateLocationButtonBasedOnPermission(permissionStatus.state);
+                
+                // Listen for permission changes
+                permissionStatus.addEventListener('change', function() {
+                    updateLocationButtonBasedOnPermission(permissionStatus.state);
+                });
+            }
+        } catch (error) {
+            // Permissions API not supported - button will work normally
+            console.log('Permissions API not supported, using fallback behavior');
+        }
+    }
+    
+    // Update location button appearance based on permission state
+    function updateLocationButtonBasedOnPermission(state) {
+        if (!currentLocationBtn) return;
+        
+        const button = currentLocationBtn;
+        const icon = button.querySelector('i');
+        
+        // Remove existing state classes
+        button.classList.remove('btn-success', 'btn-warning', 'btn-danger');
+        
+        switch (state) {
+            case 'granted':
+                button.classList.add('btn-success');
+                button.title = 'לחץ לזיהוי המיקום הנוכחי (הרשאה ניתנה)';
+                if (icon) {
+                    icon.className = 'bi bi-geo-alt-fill me-1';
+                }
+                break;
+            case 'prompt':
+                button.classList.add('btn-outline-primary'); // Default state
+                button.title = 'לחץ לזיהוי המיקום הנוכחי (יתבקש אישור)';
+                if (icon) {
+                    icon.className = 'bi bi-geo-alt-fill me-1';
+                }
+                break;
+            case 'denied':
+                button.classList.add('btn-warning');
+                button.title = 'הרשאת מיקום נחסמה. לחץ על סמל המנעול בכתובת לאפשר מחדש';
+                if (icon) {
+                    icon.className = 'bi bi-geo-alt me-1';
+                }
+                break;
+        }
+    }
+    
+    // Initialize location permission check on page load
+    window.addEventListener('load', function() {
+        checkLocationPermissionStatus();
+    });
+    
     // Optional: Auto-detect location on page load (with user permission)
     // Uncomment the following if you want to auto-detect location when the page loads
     /*
     window.addEventListener('load', function() {
-        if (navigator.geolocation && !locationInput.value.trim()) {
-            // Only auto-detect if location field is empty
-            currentLocationBtn.click();
-        }
+        setTimeout(async () => {
+            if (navigator.geolocation && !locationInput.value.trim()) {
+                try {
+                    if ('permissions' in navigator) {
+                        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+                        if (permissionStatus.state === 'granted') {
+                            // Only auto-detect if permission already granted
+                            currentLocationBtn.click();
+                        }
+                    }
+                } catch (error) {
+                    // Ignore permission check errors for auto-detection
+                }
+            }
+        }, 1000); // Delay to let page load completely
     });
     */
     
@@ -1206,6 +1489,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        // Validate optional family fields (if provided)
+        const familyFields = [
+            {id: 'spouse_name', label: 'שם הבן/בת זוג'},
+            {id: 'children_names', label: 'שמות הילדים'},
+            {id: 'parents_names', label: 'שמות ההורים'},
+            {id: 'family_names', label: 'שמות המשפחות'}
+        ];
+        
+        familyFields.forEach(field => {
+            const value = document.getElementById(field.id).value.trim();
+            if (value) {
+                const validation = HebrewMemorialApp.validateHebrewName(value);
+                if (!validation.valid) {
+                    isValid = false;
+                    errors.push(`${field.label}: ${validation.message}`);
+                    document.getElementById(field.id).classList.add('is-invalid');
+                    document.getElementById(`${field.id}-error`).textContent = validation.message;
+                }
+            }
+        });
+        
         // Validate memorial song URL if provided
         const songUrl = document.getElementById('memorial_song_url').value.trim();
         if (songUrl) {
@@ -1285,6 +1589,19 @@ document.addEventListener('DOMContentLoaded', function() {
         submitFormData.append('hebrew_last_name', hebrewLastName);
         submitFormData.append('deceased_name_hebrew', deceasedNameHebrew);
         submitFormData.append('parent_name_hebrew', parentNameHebrew);
+        
+        // Add family fields (optional)
+        const spouseName = document.getElementById('spouse_name').value.trim();
+        if (spouseName) submitFormData.append('spouse_name', spouseName);
+        
+        const childrenNames = document.getElementById('children_names').value.trim();
+        if (childrenNames) submitFormData.append('children_names', childrenNames);
+        
+        const parentsNames = document.getElementById('parents_names').value.trim();
+        if (parentsNames) submitFormData.append('parents_names', parentsNames);
+        
+        const familyNames = document.getElementById('family_names').value.trim();
+        if (familyNames) submitFormData.append('family_names', familyNames);
         
         if (englishFirstName) submitFormData.append('english_first_name', englishFirstName);
         if (englishLastName) submitFormData.append('english_last_name', englishLastName);

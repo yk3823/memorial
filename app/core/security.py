@@ -84,7 +84,7 @@ def add_security_headers(response: Union[Response, StarletteResponse]) -> None:
         
         # Permissions policy (formerly Feature Policy)
         "Permissions-Policy": (
-            "geolocation=(), microphone=(), camera=(), "
+            "geolocation=(self), microphone=(), camera=(), "
             "payment=(), usb=(), magnetometer=(), gyroscope=(), "
             "accelerometer=(), ambient-light-sensor=(), autoplay=(), "
             "encrypted-media=(), fullscreen=(self), picture-in-picture=()"

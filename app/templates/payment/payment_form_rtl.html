@@ -1,0 +1,532 @@
+{% extends "base_rtl.html" %}
+
+{% block title %}תשלום עבור מנוי - {% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-container {
+        min-height: 80vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .payment-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .payment-header {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border-radius: 20px 20px 0 0;
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .payment-amount {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .payment-description {
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+    
+    .payment-features {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .feature-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+    }
+    
+    .feature-icon {
+        color: #28a745;
+        margin-left: 0.75rem;
+        font-size: 1.2rem;
+    }
+    
+    .payment-methods {
+        border-top: 1px solid #e9ecef;
+        padding-top: 2rem;
+    }
+    
+    .method-card {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 1rem;
+    }
+    
+    .method-card:hover {
+        border-color: #007bff;
+        box-shadow: 0 5px 15px rgba(0, 123, 255, 0.1);
+    }
+    
+    .method-card.selected {
+        border-color: #007bff;
+        background: rgba(0, 123, 255, 0.05);
+    }
+    
+    .method-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: #007bff;
+    }
+    
+    .paypal-button {
+        background: #0070ba;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 10px;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 112, 186, 0.3);
+    }
+    
+    .paypal-button:hover {
+        background: #005ea6;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 112, 186, 0.4);
+    }
+    
+    .coupon-field {
+        background: #fff3cd;
+        border: 2px dashed #ffc107;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .security-info {
+        background: #e7f3ff;
+        border: 1px solid #b3d9ff;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    
+    .loading-spinner {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        text-align: center;
+    }
+    
+    @media (max-width: 768px) {
+        .payment-amount {
+            font-size: 2rem;
+        }
+        
+        .payment-card {
+            margin: 1rem;
+            border-radius: 15px;
+        }
+        
+        .payment-header {
+            padding: 1.5rem;
+            border-radius: 15px 15px 0 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-container d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-6">
+                <div class="payment-card">
+                    <!-- Payment Header -->
+                    <div class="payment-header">
+                        <div class="payment-amount">₪100</div>
+                        <div class="payment-description">מנוי חודשי לאתר הנצחה</div>
+                        <small class="d-block mt-2 opacity-75">תשלום חד-פעמי עבור יצירת דף הנצחה אחד</small>
+                    </div>
+                    
+                    <!-- Payment Body -->
+                    <div class="p-4">
+                        <!-- What's Included -->
+                        <div class="payment-features">
+                            <h5 class="mb-3 text-center">מה כלול במנוי:</h5>
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill feature-icon"></i>
+                                <span>יצירת דף הנצחה אחד מותאם אישית</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill feature-icon"></i>
+                                <span>העלאת עד 6 תמונות לכל דף</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill feature-icon"></i>
+                                <span>פסוקי תהילים קיט מותאמים לשם העברי</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill feature-icon"></i>
+                                <span>קישור ייחודי לשיתוף עם המשפחה</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill feature-icon"></i>
+                                <span>תמיכה בעברית מלאה עם תצוגת RTL</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="bi bi-check-circle-fill feature-icon"></i>
+                                <span>שמירה מאובטחת לכל החיים</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Form -->
+                        <form id="paymentForm" method="post">
+                            <!-- Payment Methods -->
+                            <div class="payment-methods">
+                                <h5 class="mb-3 text-center">בחר אמצעי תשלום:</h5>
+                                
+                                <!-- PayPal Method -->
+                                <div class="method-card selected" data-method="paypal" onclick="selectPaymentMethod('paypal')">
+                                    <div class="text-center">
+                                        <div class="method-icon">
+                                            <i class="bi bi-paypal"></i>
+                                        </div>
+                                        <h6 class="mb-2">PayPal</h6>
+                                        <p class="text-muted mb-0 small">תשלום מאובטח באמצעות PayPal</p>
+                                        <p class="text-muted mb-0 small">כרטיס אשראי או חשבון PayPal</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Coupon Method -->
+                                <div class="method-card" data-method="coupon" onclick="selectPaymentMethod('coupon')">
+                                    <div class="text-center">
+                                        <div class="method-icon">
+                                            <i class="bi bi-ticket-perforated"></i>
+                                        </div>
+                                        <h6 class="mb-2">קופון תשלום</h6>
+                                        <p class="text-muted mb-0 small">עבור תשלומים שבוצעו במשרד</p>
+                                        <p class="text-muted mb-0 small">הזן קוד קופון שקיבלת</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Coupon Input Field (hidden by default) -->
+                            <div id="couponField" class="coupon-field" style="display: none;">
+                                <h6 class="mb-3">
+                                    <i class="bi bi-ticket-perforated me-2"></i>
+                                    הזן קוד קופון:
+                                </h6>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="couponCode" name="coupon_code" 
+                                           placeholder="הזן קוד קופון (לדוגמה: MEMORIAL-A1B2-C3D4-E5F6)" 
+                                           maxlength="50" autocomplete="off" 
+                                           style="text-transform: uppercase; font-family: 'Courier New', monospace;">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-ticket-perforated"></i>
+                                    </span>
+                                </div>
+                                <div id="couponValidationMessage" class="mt-2" style="display: none;"></div>
+                                <small class="text-muted mt-2 d-block">
+                                    קופון זה מיועד עבור תשלומים שבוצעו במשרד. אנא הזן את הקוד שקיבלת.
+                                </small>
+                            </div>
+                            
+                            <!-- Payment Button -->
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" id="paymentBtn" class="paypal-button">
+                                    <i class="bi bi-credit-card me-2"></i>
+                                    <span id="paymentBtnText">המשך לתשלום דרך PayPal</span>
+                                </button>
+                            </div>
+                            
+                            <!-- Security Info -->
+                            <div class="security-info mt-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-shield-check me-2 text-success"></i>
+                                    <small>
+                                        <strong>תשלום מאובטח 100%</strong><br>
+                                        כל התשלומים מוצפנים בטכנולוגיית SSL ומעובדים באופן מאובטח
+                                    </small>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <!-- Back Link -->
+                        <div class="text-center mt-4">
+                            <a href="/dashboard" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-right me-2"></i>
+                                חזור ללוח הבקרה
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-spinner">
+        <div class="spinner-border text-primary mb-3" role="status">
+            <span class="visually-hidden">טוען...</span>
+        </div>
+        <h5>מעבד תשלום...</h5>
+        <p class="text-muted">אנא המתן, אל תסגור את הדפדפן</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let selectedMethod = 'paypal';
+    
+    // Helper functions for better UX
+    function showError(message, element = null) {
+        if (element) {
+            element.innerHTML = `<div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>${message}
+            </div>`;
+            element.style.display = 'block';
+        } else {
+            alert(message);
+        }
+    }
+    
+    function showSuccess(message, element) {
+        element.innerHTML = `<div class="alert alert-success" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>${message}
+        </div>`;
+        element.style.display = 'block';
+    }
+    
+    function showInfo(message, element) {
+        element.innerHTML = `<div class="alert alert-info" role="alert">
+            <i class="bi bi-info-circle-fill me-2"></i>${message}
+        </div>`;
+        element.style.display = 'block';
+    }
+    
+    function clearMessage(element) {
+        element.style.display = 'none';
+        element.innerHTML = '';
+    }
+    
+    // Validate coupon code format
+    function validateCouponFormat(code) {
+        // Basic format validation for MEMORIAL-XXXX-XXXX-XXXX
+        const couponPattern = /^MEMORIAL-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4,}$/i;
+        return couponPattern.test(code);
+    }
+    
+    function selectPaymentMethod(method) {
+        selectedMethod = method;
+        
+        // Update UI
+        document.querySelectorAll('.method-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        document.querySelector(`[data-method="${method}"]`).classList.add('selected');
+        
+        // Show/hide coupon field
+        const couponField = document.getElementById('couponField');
+        const paymentBtn = document.getElementById('paymentBtn');
+        const paymentBtnText = document.getElementById('paymentBtnText');
+        
+        if (method === 'coupon') {
+            couponField.style.display = 'block';
+            paymentBtn.className = 'btn btn-warning btn-lg w-100';
+            paymentBtnText.innerHTML = '<i class="bi bi-ticket-perforated me-2"></i>אמת קופון ותשלום';
+        } else {
+            couponField.style.display = 'none';
+            paymentBtn.className = 'paypal-button';
+            paymentBtnText.innerHTML = '<i class="bi bi-credit-card me-2"></i>המשך לתשלום דרך PayPal';
+        }
+    }
+    
+    // Handle form submission
+    document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Show loading overlay
+        document.getElementById('loadingOverlay').style.display = 'flex';
+        
+        try {
+            const formData = new FormData();
+            formData.append('amount', '100.00');
+            formData.append('currency', 'ILS');
+            formData.append('description', 'אתר הנצחה - מנוי חודשי');
+            
+            if (selectedMethod === 'coupon') {
+                const couponCode = document.getElementById('couponCode').value.trim().toUpperCase();
+                const messageDiv = document.getElementById('couponValidationMessage');
+                
+                if (!couponCode) {
+                    showError('אנא הזן קוד קופון', messageDiv);
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    return;
+                }
+                
+                if (couponCode.length < 10) {
+                    showError('קוד הקופון קצר מדי - אנא וודא שהזנת את הקוד המלא', messageDiv);
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    return;
+                }
+                
+                if (!validateCouponFormat(couponCode)) {
+                    showInfo('פורמט הקוד לא סטנדרטי - אנא וודא שהזנת את הקוד כפי שקיבלת במשרד', messageDiv);
+                }
+                
+                clearMessage(messageDiv);
+                formData.append('coupon_code', couponCode);
+            }
+            
+            // Create payment via API
+            const response = await fetch('/v1/payment/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                },
+                body: JSON.stringify({
+                    amount: 100.00,
+                    currency: 'ILS',
+                    description: 'אתר הנצחה - מנוי חודשי',
+                    coupon_code: selectedMethod === 'coupon' ? document.getElementById('couponCode').value.trim().toUpperCase() : null
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                if (selectedMethod === 'paypal' && result.approval_url) {
+                    // Redirect to PayPal
+                    window.location.href = result.approval_url;
+                } else if (selectedMethod === 'coupon') {
+                    // Handle coupon payment
+                    window.location.href = '/payment/success?payment_id=' + result.payment.id;
+                } else {
+                    throw new Error('לא ניתן להפנות לתשלום');
+                }
+            } else {
+                const errorMsg = result.message || 'שגיאה ביצירת התשלום';
+                if (selectedMethod === 'coupon') {
+                    const messageDiv = document.getElementById('couponValidationMessage');
+                    showError(errorMsg, messageDiv);
+                } else {
+                    throw new Error(errorMsg);
+                }
+                document.getElementById('loadingOverlay').style.display = 'none';
+                return;
+            }
+        } catch (error) {
+            console.error('Payment error:', error);
+            
+            if (selectedMethod === 'coupon') {
+                const messageDiv = document.getElementById('couponValidationMessage');
+                showError('שגיאה ביצירת התשלום: ' + error.message, messageDiv);
+            } else {
+                alert('שגיאה ביצירת התשלום: ' + error.message);
+            }
+            
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+    });
+    
+    // Add real-time coupon validation
+    document.getElementById('couponCode').addEventListener('input', function(e) {
+        const couponCode = e.target.value.trim().toUpperCase();
+        const messageDiv = document.getElementById('couponValidationMessage');
+        
+        if (!couponCode) {
+            clearMessage(messageDiv);
+            return;
+        }
+        
+        // Format the input in real-time
+        let formatted = couponCode;
+        if (couponCode.length > 0 && !couponCode.startsWith('MEMORIAL-')) {
+            // Auto-add MEMORIAL prefix if user types just the code part
+            if (/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4,}$/.test(couponCode)) {
+                formatted = 'MEMORIAL-' + couponCode;
+                e.target.value = formatted;
+            }
+        }
+        
+        if (formatted.length >= 10) {
+            if (validateCouponFormat(formatted)) {
+                showSuccess('פורמט הקוד נראה תקין - לחץ לאימות', messageDiv);
+            } else {
+                showInfo('פורמט הקוד אינו סטנדרטי - אנא ודא שהזנת את הקוד כפי שקיבלת במשרד', messageDiv);
+            }
+        } else {
+            clearMessage(messageDiv);
+        }
+    });
+    
+    // Add coupon code formatting on paste
+    document.getElementById('couponCode').addEventListener('paste', function(e) {
+        setTimeout(() => {
+            let pasted = e.target.value.trim().toUpperCase();
+            
+            // Clean up any extra characters
+            pasted = pasted.replace(/[^A-Z0-9-]/g, '');
+            
+            // Format if needed
+            if (pasted && !pasted.startsWith('MEMORIAL-')) {
+                if (/^[A-Z0-9]{4}[A-Z0-9]{4}[A-Z0-9]{4,}$/.test(pasted)) {
+                    // Format as MEMORIAL-XXXX-XXXX-XXXX
+                    const parts = pasted.match(/.{1,4}/g);
+                    if (parts && parts.length >= 3) {
+                        pasted = 'MEMORIAL-' + parts.slice(0, 3).join('-');
+                        if (parts.length > 3) {
+                            pasted += '-' + parts.slice(3).join('');
+                        }
+                    }
+                }
+            }
+            
+            e.target.value = pasted;
+            
+            // Trigger validation
+            const event = new Event('input', { bubbles: true });
+            e.target.dispatchEvent(event);
+        }, 50);
+    });
+    
+    // Check authentication
+    window.addEventListener('load', function() {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            alert('אנא התחבר תחילה');
+            window.location.href = '/login';
+        }
+    });
+</script>
+{% endblock %}

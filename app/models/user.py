@@ -176,6 +176,29 @@ class User(BaseModel):
         cascade="all, delete-orphan"
     )
     
+    payments: Mapped[List["Payment"]] = relationship(
+        "Payment",
+        back_populates="user",
+        lazy="select",
+        cascade="all, delete-orphan"
+    )
+    
+    # Coupon relationships
+    created_coupons: Mapped[List["Coupon"]] = relationship(
+        "Coupon",
+        foreign_keys="Coupon.created_by_admin_id",
+        back_populates="created_by_admin",
+        lazy="select",
+        cascade="all, delete-orphan"
+    )
+    
+    used_coupons: Mapped[List["Coupon"]] = relationship(
+        "Coupon", 
+        foreign_keys="Coupon.used_by_user_id",
+        back_populates="used_by_user",
+        lazy="select"
+    )
+    
     # Database indexes for performance
     __table_args__ = (
         Index("ix_user_email_active", "email", "is_active"),
@@ -314,12 +337,45 @@ class User(BaseModel):
     
     def can_create_memorial(self) -> bool:
         """Check if user can create memorial pages."""
-        if not (self.is_active and self.is_verified and self.is_subscription_active()):
+        if not (self.is_active and self.is_verified):
+            return False
+        
+        # Check if user has active subscription OR completed payment
+        if not (self.is_subscription_active() or self.has_completed_payment()):
             return False
         
         # Check memorial limit
         active_memorials_count = len([m for m in self.memorials if not m.is_deleted])
         return active_memorials_count < self.max_memorials
+    
+    def has_completed_payment(self) -> bool:
+        """Check if user has at least one completed payment."""
+        for payment in self.payments:
+            if payment.status == "completed":
+                return True
+        return False
+    
+    def get_latest_payment(self):
+        """Get the user's most recent payment."""
+        if self.payments:
+            return max(self.payments, key=lambda p: p.created_at)
+        return None
+    
+    def activate_subscription_from_payment(self, payment) -> None:
+        """
+        Activate subscription based on successful payment.
+        
+        Args:
+            payment: Completed payment object
+        """
+        from datetime import date, timedelta
+        
+        # Activate subscription for the purchased duration
+        end_date = date.today() + timedelta(days=payment.subscription_months * 30)
+        self.activate_subscription(end_date)
+        
+        # Grant memorial allowances
+        self.max_memorials = payment.max_memorials_granted
     
     def get_memorial_usage(self) -> dict:
         """Get memorial usage statistics."""

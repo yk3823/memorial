@@ -10,8 +10,12 @@ import datetime
 import logging
 
 from app.models.user import User
-from app.core.deps import get_current_user_optional, get_db
+from app.models.payment import Payment
+from app.core.deps import get_current_user_optional, get_current_admin_user, get_db
+from app.services.payment import get_payment_service
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+import uuid
 
 # Initialize templates
 templates = Jinja2Templates(directory="app/templates")
@@ -229,6 +233,16 @@ async def demo_page(
     """Demo page"""
     context = get_template_context(request, user)
     return templates.TemplateResponse("demo.html", context)
+
+# Admin routes
+@router.get("/admin/coupons", response_class=HTMLResponse, name="admin_coupons")
+async def admin_coupons_page(
+    request: Request,
+    user: User = Depends(get_current_admin_user)
+):
+    """Admin coupon management page"""
+    context = get_template_context(request, user)
+    return templates.TemplateResponse("admin/coupon_management_rtl.html", context)
 
 # Password reset routes
 @router.get("/forgot-password", response_class=HTMLResponse, name="forgot_password")
@@ -619,3 +633,191 @@ async def he_view_memorial(
     context = get_template_context(request, user)
     context["memorial_slug"] = slug
     return templates.TemplateResponse("memorial/view_rtl.html", context)
+
+
+# Payment routes - Hebrew RTL
+@router.get("/payment", response_class=HTMLResponse, name="payment_form")
+async def payment_form_page(
+    request: Request,
+    user: Optional[User] = Depends(get_current_user_optional)
+):
+    """Payment form page - Hebrew RTL"""
+    if not user:
+        return RedirectResponse(url="/login?redirect=/payment", status_code=HTTP_302_FOUND)
+    
+    if not user.is_verified:
+        return RedirectResponse(url="/verify-email", status_code=HTTP_302_FOUND)
+    
+    # Check if user already has completed payment
+    if user.has_completed_payment():
+        return RedirectResponse(url="/dashboard", status_code=HTTP_302_FOUND)
+    
+    context = get_template_context(request, user)
+    return templates.TemplateResponse("payment/payment_form_rtl.html", context)
+
+
+@router.get("/payment/success", response_class=HTMLResponse, name="payment_success")
+async def payment_success_page(
+    request: Request,
+    payment_id: Optional[str] = None,
+    paymentId: Optional[str] = None,  # PayPal uses this parameter
+    PayerID: Optional[str] = None,    # PayPal payer ID
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db)
+):
+    """Payment success page - Hebrew RTL"""
+    context = get_template_context(request, user)
+    
+    # Handle PayPal return parameters
+    if paymentId and PayerID and user:
+        try:
+            # Execute PayPal payment
+            from app.services.payment import get_payment_service
+            payment_service = get_payment_service()
+            
+            # Find payment by PayPal payment ID
+            stmt = select(Payment).where(
+                Payment.payment_id == paymentId,
+                Payment.user_id == user.id
+            )
+            result = await db.execute(stmt)
+            payment = result.scalar_one_or_none()
+            
+            if payment and payment.is_pending():
+                # Execute the payment
+                executed_payment = await payment_service.execute_payment(
+                    db=db,
+                    payment_id=payment.id,
+                    paypal_payment_id=paymentId,
+                    payer_id=PayerID
+                )
+                context["payment"] = executed_payment
+                context["payment_executed"] = True
+            
+        except Exception as e:
+            logger.error(f"Payment execution error: {e}")
+            context["payment_error"] = "שגיאה בביצוע התשלום"
+    
+    # Handle direct payment_id parameter
+    elif payment_id:
+        try:
+            payment_uuid = uuid.UUID(payment_id)
+            stmt = select(Payment).where(Payment.id == payment_uuid)
+            result = await db.execute(stmt)
+            payment = result.scalar_one_or_none()
+            
+            if payment:
+                context["payment"] = payment
+                
+        except (ValueError, Exception) as e:
+            logger.error(f"Payment lookup error: {e}")
+    
+    return templates.TemplateResponse("payment/payment_success_rtl.html", context)
+
+
+@router.get("/payment/cancel", response_class=HTMLResponse, name="payment_cancel")
+async def payment_cancel_page(
+    request: Request,
+    payment_id: Optional[str] = None,
+    reason: Optional[str] = None,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db)
+):
+    """Payment cancel/failure page - Hebrew RTL"""
+    context = get_template_context(request, user)
+    
+    # Try to get payment details for context
+    if payment_id and user:
+        try:
+            payment_uuid = uuid.UUID(payment_id)
+            stmt = select(Payment).where(
+                Payment.id == payment_uuid,
+                Payment.user_id == user.id
+            )
+            result = await db.execute(stmt)
+            payment = result.scalar_one_or_none()
+            
+            if payment:
+                # Update payment status to cancelled
+                from app.services.payment import get_payment_service
+                payment_service = get_payment_service()
+                await payment_service.cancel_payment(
+                    db=db,
+                    payment_id=payment.id,
+                    reason=reason or "User cancelled payment"
+                )
+                context["payment"] = payment
+                
+        except (ValueError, Exception) as e:
+            logger.error(f"Payment cancellation error: {e}")
+    
+    context["cancellation_reason"] = reason
+    return templates.TemplateResponse("payment/payment_cancel_rtl.html", context)
+
+
+@router.get("/payment/history", response_class=HTMLResponse, name="payment_history")
+async def payment_history_page(
+    request: Request,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db)
+):
+    """Payment history page - Hebrew RTL"""
+    if not user:
+        return RedirectResponse(url="/login", status_code=HTTP_302_FOUND)
+    
+    # Get user's payment history
+    try:
+        from app.services.payment import get_payment_service
+        payment_service = get_payment_service()
+        payments = await payment_service.get_user_payments(
+            db=db,
+            user_id=user.id,
+            limit=20,
+            offset=0
+        )
+        
+        context = get_template_context(request, user)
+        context["payments"] = payments
+        
+    except Exception as e:
+        logger.error(f"Payment history error: {e}")
+        context = get_template_context(request, user)
+        context["payments"] = []
+        context["error"] = "שגיאה בטעינת היסטוריית התשלומים"
+    
+    return templates.TemplateResponse("payment/payment_history_rtl.html", context)
+
+
+# Hebrew payment routes with /he/ prefix
+@router.get("/he/payment", response_class=HTMLResponse, name="he_payment_form")
+async def he_payment_form_page(
+    request: Request,
+    user: Optional[User] = Depends(get_current_user_optional)
+):
+    """Hebrew payment form page - /he/ prefix"""
+    return await payment_form_page(request, user)
+
+
+@router.get("/he/payment/success", response_class=HTMLResponse, name="he_payment_success")
+async def he_payment_success_page(
+    request: Request,
+    payment_id: Optional[str] = None,
+    paymentId: Optional[str] = None,
+    PayerID: Optional[str] = None,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db)
+):
+    """Hebrew payment success page - /he/ prefix"""
+    return await payment_success_page(request, payment_id, paymentId, PayerID, user, db)
+
+
+@router.get("/he/payment/cancel", response_class=HTMLResponse, name="he_payment_cancel")
+async def he_payment_cancel_page(
+    request: Request,
+    payment_id: Optional[str] = None,
+    reason: Optional[str] = None,
+    user: Optional[User] = Depends(get_current_user_optional),
+    db: AsyncSession = Depends(get_db)
+):
+    """Hebrew payment cancel page - /he/ prefix"""
+    return await payment_cancel_page(request, payment_id, reason, user, db)

@@ -273,6 +273,30 @@ def require_roles(allowed_roles: List[UserRole]):
 # Admin-only access
 require_admin = require_roles([UserRole.ADMIN])
 
+async def get_current_admin_user(
+    current_user: Annotated[User, Depends(get_current_active_user)]
+) -> User:
+    """
+    Get current admin user (must be authenticated, active, and have admin role).
+    
+    Args:
+        current_user: Current active user
+        
+    Returns:
+        User: Current admin user
+        
+    Raises:
+        HTTPException: If user is not an admin
+    """
+    if not current_user.is_admin():
+        logger.warning(f"Non-admin user {current_user.id} attempted admin access")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    
+    return current_user
+
 
 def require_subscription():
     """

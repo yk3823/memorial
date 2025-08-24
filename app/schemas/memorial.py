@@ -56,6 +56,35 @@ class MemorialBase(BaseModel):
         description="Name of parent (mother or father) in Hebrew"
     )
     
+    # Family relationship fields (all optional)
+    spouse_name: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=200,
+        description="Name of spouse/husband/wife in Hebrew (optional)"
+    )
+    
+    children_names: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=1000,
+        description="Names of children in Hebrew (optional)"
+    )
+    
+    parents_names: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=300,
+        description="Names of both parents in Hebrew (optional)"
+    )
+    
+    family_names: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=1000,
+        description="Names of family members or family groups in Hebrew (optional)"
+    )
+    
     # Combined names (can be provided or computed)
     deceased_name_hebrew: Optional[str] = Field(
         None,
@@ -166,6 +195,23 @@ class MemorialBase(BaseModel):
             # If not purely Hebrew, allow mixed Hebrew-English for names
             if not re.match(r'^[\u0590-\u05FF\w\s\.,\-\'"()]+$', v):
                 raise ValueError("Hebrew name contains invalid characters")
+        
+        return v
+    
+    @field_validator('spouse_name', 'children_names', 'parents_names', 'family_names')
+    def validate_hebrew_family_fields(cls, v):
+        """Validate Hebrew family name fields format."""
+        if v is not None:
+            v = v.strip()
+            if len(v) == 0:
+                return None
+            
+            # Basic Hebrew character validation (allow Hebrew, spaces, punctuation, numbers for ages/dates)
+            if not re.match(r'^[\u0590-\u05FF\w\s\.,\-\'"()0-9]+$', v):
+                raise ValueError("Family field contains invalid characters - only Hebrew, letters, numbers, spaces and basic punctuation are allowed")
+            
+            # Remove excessive whitespace
+            v = re.sub(r'\s+', ' ', v)
         
         return v
     
@@ -320,6 +366,43 @@ class MemorialUpdate(BaseModel):
         description="Last name of the deceased in English"
     )
     
+    # Parent name
+    parent_name_hebrew: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=100,
+        description="Name of parent (mother or father) in Hebrew"
+    )
+    
+    # Family relationship fields (all optional)
+    spouse_name: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=200,
+        description="Name of spouse/husband/wife in Hebrew (optional)"
+    )
+    
+    children_names: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=1000,
+        description="Names of children in Hebrew (optional)"
+    )
+    
+    parents_names: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=300,
+        description="Names of both parents in Hebrew (optional)"
+    )
+    
+    family_names: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=1000,
+        description="Names of family members or family groups in Hebrew (optional)"
+    )
+    
     # Combined names (can be provided or computed)
     deceased_name_hebrew: Optional[str] = Field(
         None,
@@ -399,7 +482,8 @@ class MemorialUpdate(BaseModel):
     )
     
     # Use the same validators as MemorialBase
-    _validate_hebrew_names = field_validator('hebrew_first_name', 'hebrew_last_name')(MemorialBase.validate_hebrew_names)
+    _validate_hebrew_names = field_validator('hebrew_first_name', 'hebrew_last_name', 'parent_name_hebrew')(MemorialBase.validate_hebrew_names)
+    _validate_hebrew_family_fields = field_validator('spouse_name', 'children_names', 'parents_names', 'family_names')(MemorialBase.validate_hebrew_family_fields)
     _validate_english_names = field_validator('english_first_name', 'english_last_name')(MemorialBase.validate_english_names)
     _validate_dates = field_validator('birth_date_gregorian', 'death_date_gregorian')(MemorialBase.validate_dates)
     _validate_hebrew_dates = field_validator('birth_date_hebrew', 'death_date_hebrew')(MemorialBase.validate_hebrew_dates)
@@ -412,6 +496,13 @@ class MemorialResponse(MemorialBase):
     """
     id: UUID = Field(..., description="Memorial unique identifier")
     owner_id: UUID = Field(..., description="Owner user ID")
+    
+    # Ensure all family fields are included in response
+    parent_name_hebrew: str = Field(..., description="Name of parent (mother or father) in Hebrew")
+    spouse_name: Optional[str] = Field(None, description="Name of spouse/husband/wife in Hebrew (optional)")
+    children_names: Optional[str] = Field(None, description="Names of children in Hebrew (optional)")
+    parents_names: Optional[str] = Field(None, description="Names of both parents in Hebrew (optional)")
+    family_names: Optional[str] = Field(None, description="Names of family members or family groups in Hebrew (optional)")
     yahrzeit_date_hebrew: Optional[str] = Field(
         None,
         description="Yahrzeit date in Hebrew calendar"

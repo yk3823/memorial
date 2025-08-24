@@ -1,0 +1,375 @@
+{% extends "base_rtl.html" %}
+
+{% block title %}תשלום הושלם בהצלחה - {% endblock %}
+
+{% block extra_css %}
+<style>
+    .success-container {
+        min-height: 80vh;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    }
+    
+    .success-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .success-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border-radius: 20px 20px 0 0;
+        color: white;
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+    
+    .success-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: bounce 2s infinite;
+    }
+    
+    .success-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .success-subtitle {
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+    
+    .payment-details {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .detail-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+        font-weight: 600;
+        color: #28a745;
+    }
+    
+    .detail-label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    
+    .detail-value {
+        font-weight: 600;
+        color: #212529;
+    }
+    
+    .next-steps {
+        background: #e7f3ff;
+        border: 1px solid #b3d9ff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .step-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+    
+    .step-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .step-number {
+        background: #007bff;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 0.75rem;
+        flex-shrink: 0;
+    }
+    
+    .step-content {
+        flex: 1;
+    }
+    
+    .step-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .step-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    
+    .action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-create {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    }
+    
+    .btn-create:hover {
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    }
+    
+    .btn-dashboard {
+        background: #f8f9fa;
+        border: 2px solid #dee2e6;
+        padding: 12px 24px;
+        border-radius: 8px;
+        color: #495057;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-dashboard:hover {
+        color: #495057;
+        background: #e9ecef;
+        border-color: #adb5bd;
+    }
+    
+    .receipt-info {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+    
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-10px);
+        }
+        60% {
+            transform: translateY(-5px);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .success-header {
+            padding: 2rem 1rem;
+        }
+        
+        .success-icon {
+            font-size: 3rem;
+        }
+        
+        .success-title {
+            font-size: 1.5rem;
+        }
+        
+        .action-buttons {
+            grid-template-columns: 1fr;
+        }
+        
+        .success-card {
+            margin: 1rem;
+            border-radius: 15px;
+        }
+        
+        .success-header {
+            border-radius: 15px 15px 0 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="success-card">
+                    <!-- Success Header -->
+                    <div class="success-header">
+                        <div class="success-icon">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <div class="success-title">תשלום הושלם בהצלחה!</div>
+                        <div class="success-subtitle">המנוי שלך פעיל עכשיו</div>
+                    </div>
+                    
+                    <!-- Success Body -->
+                    <div class="p-4">
+                        <!-- Payment Details -->
+                        {% if payment %}
+                        <div class="payment-details">
+                            <h5 class="mb-3 text-center">פרטי התשלום:</h5>
+                            <div class="detail-row">
+                                <span class="detail-label">מספר תשלום:</span>
+                                <span class="detail-value">#{{ payment.id.hex[:8]|upper }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">סכום:</span>
+                                <span class="detail-value">{{ payment.formatted_amount }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">תאריך:</span>
+                                <span class="detail-value">{{ payment.completed_at.strftime('%d/%m/%Y %H:%M') if payment.completed_at else payment.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">אמצעי תשלום:</span>
+                                <span class="detail-value">
+                                    {% if payment.is_paypal_payment %}
+                                        PayPal
+                                    {% elif payment.is_coupon_payment %}
+                                        קופון: {{ payment.coupon_code }}
+                                    {% else %}
+                                        {{ payment.payment_method }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">סטטוס:</span>
+                                <span class="detail-value text-success">{{ payment.display_status }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Next Steps -->
+                        <div class="next-steps">
+                            <h5 class="mb-3 d-flex align-items-center">
+                                <i class="bi bi-list-check me-2"></i>
+                                השלבים הבאים:
+                            </h5>
+                            
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <div class="step-title">צור דף הנצחה</div>
+                                    <p class="step-description">כעת אתה יכול ליצור דף הנצחה אחד עם כל הפרטים והתמונות</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step-item">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <div class="step-title">העלה תמונות</div>
+                                    <p class="step-description">העלה עד 6 תמונות יקרות לב לדף הההנצחה</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step-item">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <div class="step-title">קבל פסוקים מותאמים</div>
+                                    <p class="step-description">הפסוקים מתהילים קיט יותאמו אוטומטית לשם העברי</p>
+                                </div>
+                            </div>
+                            
+                            <div class="step-item">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <div class="step-title">שתף עם המשפחה</div>
+                                    <p class="step-description">קבל קישור ייחודי לשיתוף דף ההנצחה עם בני המשפחה</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <a href="/memorials/create" class="btn-create">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                צור דף הנצחה חדש
+                            </a>
+                            <a href="/dashboard" class="btn-dashboard">
+                                <i class="bi bi-speedometer2 me-2"></i>
+                                לוח הבקרה שלי
+                            </a>
+                        </div>
+                        
+                        <!-- Receipt Info -->
+                        <div class="receipt-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            <strong>קבלה:</strong> קבלה על התשלום נשלחה לכתובת האימייל שלך.
+                            לשאלות נוספות, אנא צור קשר עמנו.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh user info after successful payment
+    window.addEventListener('load', async function() {
+        try {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                // Refresh user information to update subscription status
+                const response = await fetch('/v1/auth/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    console.log('User subscription status updated:', userData.user.subscription_status);
+                }
+            }
+        } catch (error) {
+            console.log('Could not refresh user info:', error);
+        }
+    });
+    
+    // Add celebratory effect
+    setTimeout(function() {
+        // Add confetti or celebration animation here if desired
+        console.log('Payment successful! 🎉');
+    }, 1000);
+</script>
+{% endblock %}

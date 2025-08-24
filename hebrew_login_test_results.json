@@ -1,0 +1,56 @@
+{
+  "overall_success": false,
+  "tests_passed": 1,
+  "tests_run": 6,
+  "success_rate": "1/6 (16.7%)",
+  "test_results": [
+    {
+      "test": "Hebrew Login Page Access",
+      "success": true,
+      "details": "Found 6/6 Hebrew indicators",
+      "data": {
+        "found_indicators": [
+          "כניסה לחשבון",
+          "כתובת דוא\"ל",
+          "סיסמה",
+          "זכור אותי",
+          "dir=\"rtl\"",
+          "lang=\"he\""
+        ],
+        "content_length": 29699,
+        "has_rtl": true,
+        "has_hebrew_lang": true
+      },
+      "timestamp": "2025-08-24T09:00:23.603778"
+    },
+    {
+      "test": "Login API Call",
+      "success": false,
+      "details": "Status: 401, Success: None, Message: No message",
+      "data": {
+        "status": 401,
+        "response_data": {
+          "detail": "Incorrect email or password"
+        },
+        "cookies_received": 0,
+        "cookie_names": []
+      },
+      "timestamp": "2025-08-24T09:00:23.607869"
+    },
+    {
+      "test": "Login Redirect Flow",
+      "success": false,
+      "details": "Login API failed: HTTP 401",
+      "data": {
+        "step": "api_login",
+        "status": 401,
+        "response": {
+          "detail": "Incorrect email or password"
+        }
+      },
+      "timestamp": "2025-08-24T09:00:23.613972"
+    }
+  ],
+  "login_data": null,
+  "cookies": {}
+}

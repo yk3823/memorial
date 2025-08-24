@@ -1,0 +1,361 @@
+{% extends "base_rtl.html" %}
+
+{% block title %}היסטוריית תשלומים - {% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-container {
+        min-height: 70vh;
+        padding: 2rem 0;
+    }
+    
+    .history-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 2rem;
+    }
+    
+    .history-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px 15px 0 0;
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .history-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .history-subtitle {
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+    
+    .payment-item {
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+    
+    .payment-item:hover {
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .payment-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .payment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .payment-id {
+        font-family: 'Courier New', monospace;
+        background: #f8f9fa;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .payment-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-align: center;
+    }
+    
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeaa7;
+    }
+    
+    .status-failed {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    
+    .status-cancelled {
+        background: #e2e3e5;
+        color: #383d41;
+        border: 1px solid #d6d8db;
+    }
+    
+    .payment-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .payment-detail {
+        text-align: center;
+    }
+    
+    .detail-label {
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+        font-weight: 500;
+    }
+    
+    .detail-value {
+        font-weight: 600;
+        font-size: 1rem;
+        color: #212529;
+    }
+    
+    .payment-amount {
+        font-size: 1.25rem;
+        color: #28a745;
+    }
+    
+    .payment-description {
+        color: #6c757d;
+        font-style: italic;
+        margin-top: 0.5rem;
+        text-align: center;
+    }
+    
+    .no-payments {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6c757d;
+    }
+    
+    .no-payments-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-new-payment {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-new-payment:hover {
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+    
+    .btn-dashboard {
+        background: #f8f9fa;
+        border: 2px solid #dee2e6;
+        padding: 12px 24px;
+        border-radius: 8px;
+        color: #495057;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-dashboard:hover {
+        color: #495057;
+        background: #e9ecef;
+        border-color: #adb5bd;
+    }
+    
+    .error-message {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+        .payment-details {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        
+        .payment-header {
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: center;
+        }
+        
+        .history-title {
+            font-size: 1.5rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .btn-new-payment,
+        .btn-dashboard {
+            width: 100%;
+            max-width: 300px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="history-card">
+                    <!-- History Header -->
+                    <div class="history-header">
+                        <div class="history-title">היסטוריית תשלומים</div>
+                        <div class="history-subtitle">כל התשלומים והעסקאות שלך</div>
+                    </div>
+                    
+                    <!-- History Body -->
+                    <div class="p-4">
+                        {% if error %}
+                            <!-- Error Message -->
+                            <div class="error-message">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ error }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if payments %}
+                            <!-- Payment Items -->
+                            {% for payment in payments %}
+                            <div class="payment-item">
+                                <!-- Payment Header -->
+                                <div class="payment-header">
+                                    <div class="payment-id">
+                                        #{{ payment.id.hex[:8]|upper }}
+                                    </div>
+                                    <div class="payment-status {% if payment.status == 'completed' %}status-completed{% elif payment.status == 'pending' %}status-pending{% elif payment.status == 'failed' %}status-failed{% else %}status-cancelled{% endif %}">
+                                        {{ payment.display_status }}
+                                    </div>
+                                </div>
+                                
+                                <!-- Payment Details -->
+                                <div class="payment-details">
+                                    <div class="payment-detail">
+                                        <div class="detail-label">סכום</div>
+                                        <div class="detail-value payment-amount">{{ payment.formatted_amount }}</div>
+                                    </div>
+                                    <div class="payment-detail">
+                                        <div class="detail-label">תאריך</div>
+                                        <div class="detail-value">{{ payment.created_at.strftime('%d/%m/%Y') }}</div>
+                                    </div>
+                                    <div class="payment-detail">
+                                        <div class="detail-label">אמצעי תשלום</div>
+                                        <div class="detail-value">
+                                            {% if payment.is_paypal_payment %}
+                                                <i class="bi bi-paypal me-1"></i>PayPal
+                                            {% elif payment.is_coupon_payment %}
+                                                <i class="bi bi-ticket-perforated me-1"></i>קופון
+                                            {% else %}
+                                                {{ payment.payment_method }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Payment Description -->
+                                <div class="payment-description">
+                                    {{ payment.description }}
+                                    {% if payment.coupon_code %}
+                                        <br><small>קוד קופון: {{ payment.coupon_code }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                            
+                        {% else %}
+                            <!-- No Payments -->
+                            <div class="no-payments">
+                                <div class="no-payments-icon">
+                                    <i class="bi bi-receipt"></i>
+                                </div>
+                                <h4>אין תשלומים עדיין</h4>
+                                <p class="mb-4">עדיין לא ביצעת תשלומים. התחל עכשיו כדי ליצור דף הנצחה.</p>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            {% if not current_user.has_completed_payment() %}
+                            <a href="/payment" class="btn-new-payment">
+                                <i class="bi bi-credit-card me-2"></i>
+                                בצע תשלום חדש
+                            </a>
+                            {% endif %}
+                            <a href="/dashboard" class="btn-dashboard">
+                                <i class="bi bi-speedometer2 me-2"></i>
+                                לוח הבקרה
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh payment status for pending payments
+    document.addEventListener('DOMContentLoaded', function() {
+        const pendingPayments = document.querySelectorAll('.status-pending');
+        
+        if (pendingPayments.length > 0) {
+            // Check for status updates every 30 seconds
+            setInterval(function() {
+                // In a full implementation, you might want to poll for payment status updates
+                console.log('Checking for payment status updates...');
+                // location.reload(); // Uncomment to auto-refresh the page
+            }, 30000);
+        }
+    });
+</script>
+{% endblock %}

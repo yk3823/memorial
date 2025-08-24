@@ -15,6 +15,8 @@ from .notification import Notification, NotificationType, NotificationStatus
 from .location import Location
 from .psalm_119 import Psalm119Letter, Psalm119Verse
 from .qr_memorial import QRMemorialCode, QRScanEvent, ManufacturingPartner, QROrderStatus, QRDesignTemplate
+from .payment import Payment, PaymentStatus, PaymentMethod, CurrencyCode
+from .coupon import Coupon, CouponStatus
 
 # Import existing models if they exist
 try:
@@ -47,6 +49,8 @@ __all__ = [
     "QRMemorialCode",
     "QRScanEvent", 
     "ManufacturingPartner",
+    "Payment",
+    "Coupon",
     
     # Enums
     "UserRole",
@@ -56,6 +60,10 @@ __all__ = [
     "NotificationStatus",
     "QROrderStatus",
     "QRDesignTemplate",
+    "PaymentStatus",
+    "PaymentMethod",
+    "CurrencyCode",
+    "CouponStatus",
     
     # Association tables
     "memorial_psalm_verses",
@@ -74,6 +82,8 @@ MODELS = {
     "QRMemorialCode": QRMemorialCode,
     "QRScanEvent": QRScanEvent,
     "ManufacturingPartner": ManufacturingPartner,
+    "Payment": Payment,
+    "Coupon": Coupon,
 }
 
 # Enum registry
@@ -85,6 +95,10 @@ ENUMS = {
     "NotificationStatus": NotificationStatus,
     "QROrderStatus": QROrderStatus,
     "QRDesignTemplate": QRDesignTemplate,
+    "PaymentStatus": PaymentStatus,
+    "PaymentMethod": PaymentMethod,
+    "CurrencyCode": CurrencyCode,
+    "CouponStatus": CouponStatus,
 }
 
 
@@ -142,6 +156,7 @@ MODEL_RELATIONSHIPS = {
         "added_contacts": "One-to-many with Contact (added_by)",
         "notifications": "One-to-many with Notification (user_id)",
         "verified_locations": "One-to-many with Location (verified_by)",
+        "payments": "One-to-many with Payment",
     },
     
     "Memorial": {
@@ -196,6 +211,15 @@ MODEL_RELATIONSHIPS = {
     
     "ManufacturingPartner": {
         "qr_orders": "One-to-many with QRMemorialCode",
+    },
+    
+    "Payment": {
+        "user": "Many-to-one with User",
+    },
+    
+    "Coupon": {
+        "created_by_admin": "Many-to-one with User (created_by_admin_id)",
+        "used_by_user": "Many-to-one with User (used_by_user_id)",
     },
     
 }

@@ -218,6 +218,12 @@ async def create_memorial_with_files(
     english_first_name: Annotated[Optional[str], Form()] = None,
     english_last_name: Annotated[Optional[str], Form()] = None,
     deceased_name_english: Annotated[Optional[str], Form()] = None,
+    
+    # Family relationship fields (all optional)
+    spouse_name: Annotated[Optional[str], Form()] = None,
+    children_names: Annotated[Optional[str], Form()] = None,
+    parents_names: Annotated[Optional[str], Form()] = None,
+    family_names: Annotated[Optional[str], Form()] = None,
     birth_date_gregorian: Annotated[Optional[str], Form()] = None,
     birth_date_hebrew: Annotated[Optional[str], Form()] = None,
     death_date_gregorian: Annotated[Optional[str], Form()] = None,
@@ -337,6 +343,10 @@ async def create_memorial_with_files(
             english_first_name=english_first_name,
             english_last_name=english_last_name,
             deceased_name_english=deceased_name_english,
+            spouse_name=spouse_name,
+            children_names=children_names,
+            parents_names=parents_names,
+            family_names=family_names,
             birth_date_gregorian=birth_date_parsed,
             birth_date_hebrew=birth_date_hebrew,
             death_date_gregorian=death_date_parsed,
@@ -395,6 +405,7 @@ async def create_memorial_with_files(
                     'filename': video_info['filename'],
                     'original_filename': video_info['original_filename'],
                     'size': video_info['size'],
+                    'duration_seconds': video_info['duration_seconds'],
                     'url': f"/api/v1/files/videos/{memorial_id_str}/{video_info['filename']}"
                 }
                 logger.info(f"Video saved successfully: {video_info['filename']}")
@@ -409,6 +420,10 @@ async def create_memorial_with_files(
             deceased_name_hebrew=memorial.deceased_name_hebrew,
             deceased_name_english=memorial.deceased_name_english,
             parent_name_hebrew=memorial.parent_name_hebrew,
+            spouse_name=memorial.spouse_name,
+            children_names=memorial.children_names,
+            parents_names=memorial.parents_names,
+            family_names=memorial.family_names,
             birth_date_gregorian=memorial.birth_date_gregorian,
             birth_date_hebrew=memorial.birth_date_hebrew,
             death_date_gregorian=memorial.death_date_gregorian,
@@ -695,6 +710,10 @@ async def update_memorial(
             deceased_name_hebrew=memorial.deceased_name_hebrew,
             deceased_name_english=memorial.deceased_name_english,
             parent_name_hebrew=memorial.parent_name_hebrew,
+            spouse_name=memorial.spouse_name,
+            children_names=memorial.children_names,
+            parents_names=memorial.parents_names,
+            family_names=memorial.family_names,
             birth_date_gregorian=memorial.birth_date_gregorian,
             birth_date_hebrew=memorial.birth_date_hebrew,
             death_date_gregorian=memorial.death_date_gregorian,

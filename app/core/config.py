@@ -90,12 +90,13 @@ class Settings(BaseSettings):
     PHOTOS_FOLDER: str = Field(default="storage/photos", env="PHOTOS_FOLDER")
     VIDEOS_FOLDER: str = Field(default="storage/videos", env="VIDEOS_FOLDER")
     TEMP_FOLDER: str = Field(default="storage/temp", env="TEMP_FOLDER")
-    MAX_UPLOAD_SIZE_MB: int = Field(default=10, env="MAX_UPLOAD_SIZE_MB")
+    MAX_UPLOAD_SIZE_MB: int = Field(default=50, env="MAX_UPLOAD_SIZE_MB")
     ALLOWED_IMAGE_EXTENSIONS: List[str] = Field(default=["jpg", "jpeg", "png", "gif", "webp"], env="ALLOWED_IMAGE_EXTENSIONS")
     ALLOWED_VIDEO_EXTENSIONS: List[str] = Field(default=["mp4", "avi", "mov", "wmv"], env="ALLOWED_VIDEO_EXTENSIONS")
     MAX_PHOTOS_PER_MEMORIAL: int = Field(default=4, env="MAX_PHOTOS_PER_MEMORIAL")
+    MAX_VIDEO_DURATION_SECONDS: int = Field(default=180, env="MAX_VIDEO_DURATION_SECONDS")  # 3 minutes
     STATIC_URL: str = Field(default="/static", env="STATIC_URL")
-    MAX_UPLOAD_SIZE: int = Field(default=10 * 1024 * 1024, env="MAX_UPLOAD_SIZE")  # 10MB
+    MAX_UPLOAD_SIZE: int = Field(default=50 * 1024 * 1024, env="MAX_UPLOAD_SIZE")  # 50MB
     
     # Email Configuration
     SMTP_TLS: bool = Field(default=True, env="SMTP_TLS")
@@ -176,6 +177,12 @@ class Settings(BaseSettings):
     STRIPE_SECRET_KEY: Optional[str] = None
     STRIPE_WEBHOOK_SECRET: Optional[str] = None
     
+    # PayPal Configuration
+    PAYPAL_MODE: str = Field(default="sandbox", env="PAYPAL_MODE")  # 'sandbox' or 'live'
+    PAYPAL_CLIENT_ID: Optional[str] = Field(default=None, env="PAYPAL_CLIENT_ID")
+    PAYPAL_CLIENT_SECRET: Optional[str] = Field(default=None, env="PAYPAL_CLIENT_SECRET")
+    PAYPAL_ENABLED: bool = Field(default=True, env="PAYPAL_ENABLED")
+    
     RATE_LIMIT_REQUESTS_PER_MINUTE: int = 60
     RATE_LIMIT_REQUESTS_PER_HOUR: int = 600
     
@@ -186,7 +193,7 @@ class Settings(BaseSettings):
     FEATURE_WHATSAPP_GROUPS: bool = False
     FEATURE_VIDEO_UPLOAD: bool = True
     FEATURE_GPS_LOCATION: bool = True
-    FEATURE_PAYMENT: bool = False
+    FEATURE_PAYMENT: bool = True
     
     SENTRY_DSN: Optional[str] = None
     ENABLE_METRICS: bool = False

@@ -54,6 +54,31 @@ class Memorial(BaseModel):
         comment="Name of parent (mother or father) in Hebrew"
     )
     
+    # Family relationships (optional fields)
+    spouse_name: Mapped[Optional[str]] = mapped_column(
+        String(200),
+        nullable=True,
+        comment="Name of spouse/husband/wife in Hebrew (optional)"
+    )
+    
+    children_names: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+        comment="Names of children in Hebrew (optional)"
+    )
+    
+    parents_names: Mapped[Optional[str]] = mapped_column(
+        String(300),
+        nullable=True,
+        comment="Names of both parents in Hebrew (optional)"
+    )
+    
+    family_names: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+        comment="Names of family members or family groups in Hebrew (optional)"
+    )
+    
     # Birth dates (both Gregorian and Hebrew)
     birth_date_gregorian: Mapped[Optional[date]] = mapped_column(
         Date,
@@ -463,6 +488,8 @@ class Memorial(BaseModel):
         data['age_at_death'] = self.age_at_death
         data['public_url'] = self.public_url
         data['years_since_death'] = self.years_since_death
+        
+        # Family fields are already included in base to_dict since they're database columns
         
         # Handle primary photo safely without async calls
         primary_photo = self.get_primary_photo()

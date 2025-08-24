@@ -13,6 +13,7 @@ from datetime import datetime
 
 from fastapi import UploadFile, HTTPException
 from PIL import Image
+import ffmpeg
 import aiofiles
 
 from app.core.config import get_settings
@@ -96,6 +97,27 @@ class FileStorageService:
             'content_type': file.content_type,
             'extension': self._get_file_extension(file.filename)
         }
+
+    def _get_video_duration(self, file_path: Path) -> float:
+        """
+        Get video duration in seconds using ffmpeg.
+        
+        Args:
+            file_path: Path to the video file
+            
+        Returns:
+            Duration in seconds
+        """
+        try:
+            probe = ffmpeg.probe(str(file_path))
+            duration = float(probe['format']['duration'])
+            return duration
+        except (ffmpeg.Error, KeyError, ValueError) as e:
+            logger.error(f"Failed to get video duration for {file_path}: {e}")
+            raise HTTPException(
+                status_code=400, 
+                detail="Unable to read video metadata. Please ensure the file is a valid video."
+            )
     
     async def save_photo(self, file: UploadFile, memorial_id: str) -> Dict[str, Any]:
         """
@@ -193,10 +215,28 @@ class FileStorageService:
                 content = await file.read()
                 await f.write(content)
             
+            # Validate video duration
+            duration = self._get_video_duration(file_path)
+            max_duration = self.settings.MAX_VIDEO_DURATION_SECONDS
+            
+            if duration > max_duration:
+                # Clean up file if duration validation fails
+                if file_path.exists():
+                    file_path.unlink()
+                
+                minutes = int(duration // 60)
+                seconds = int(duration % 60)
+                max_minutes = int(max_duration // 60)
+                
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Video duration ({minutes}:{seconds:02d}) exceeds the maximum limit of {max_minutes} minutes"
+                )
+            
             # Get file URL path (relative to storage root)
             relative_path = f"videos/{memorial_id}/{filename}"
             
-            logger.info(f"Video saved: {file_path}")
+            logger.info(f"Video saved: {file_path} (duration: {duration:.1f}s)")
             
             return {
                 'video_id': video_id,
@@ -206,6 +246,7 @@ class FileStorageService:
                 'relative_path': relative_path,
                 'size': file_info['size'],
                 'content_type': file_info['content_type'],
+                'duration_seconds': duration,
                 'created_at': datetime.utcnow()
             }
             

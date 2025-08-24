@@ -1,0 +1,342 @@
+{% extends "base_rtl.html" %}
+
+{% block title %}תשלום בוטל - {% endblock %}
+
+{% block extra_css %}
+<style>
+    .cancel-container {
+        min-height: 80vh;
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    }
+    
+    .cancel-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .cancel-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border-radius: 20px 20px 0 0;
+        color: white;
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+    
+    .cancel-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: shake 1s;
+    }
+    
+    .cancel-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .cancel-subtitle {
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+    
+    .cancel-reasons {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .reason-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: white;
+        border-radius: 8px;
+        border-right: 4px solid #ffc107;
+    }
+    
+    .reason-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .reason-icon {
+        color: #ffc107;
+        margin-left: 0.75rem;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+        margin-top: 0.1rem;
+    }
+    
+    .reason-text {
+        flex: 1;
+    }
+    
+    .help-section {
+        background: #e7f3ff;
+        border: 1px solid #b3d9ff;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .help-title {
+        color: #0056b3;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .help-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+    }
+    
+    .help-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .help-icon {
+        color: #0056b3;
+        margin-left: 0.5rem;
+        font-size: 1rem;
+        margin-top: 0.2rem;
+    }
+    
+    .action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-retry {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+    
+    .btn-retry:hover {
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+    
+    .btn-dashboard {
+        background: #f8f9fa;
+        border: 2px solid #dee2e6;
+        padding: 12px 24px;
+        border-radius: 8px;
+        color: #495057;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-dashboard:hover {
+        color: #495057;
+        background: #e9ecef;
+        border-color: #adb5bd;
+    }
+    
+    .contact-info {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+    
+    @keyframes shake {
+        0%, 100% {
+            transform: translateX(0);
+        }
+        10%, 30%, 50%, 70%, 90% {
+            transform: translateX(-5px);
+        }
+        20%, 40%, 60%, 80% {
+            transform: translateX(5px);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .cancel-header {
+            padding: 2rem 1rem;
+        }
+        
+        .cancel-icon {
+            font-size: 3rem;
+        }
+        
+        .cancel-title {
+            font-size: 1.5rem;
+        }
+        
+        .action-buttons {
+            grid-template-columns: 1fr;
+        }
+        
+        .cancel-card {
+            margin: 1rem;
+            border-radius: 15px;
+        }
+        
+        .cancel-header {
+            border-radius: 15px 15px 0 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cancel-container d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="cancel-card">
+                    <!-- Cancel Header -->
+                    <div class="cancel-header">
+                        <div class="cancel-icon">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </div>
+                        <div class="cancel-title">התשלום בוטל</div>
+                        <div class="cancel-subtitle">התשלום לא הושלם</div>
+                    </div>
+                    
+                    <!-- Cancel Body -->
+                    <div class="p-4">
+                        <!-- Cancel Reasons -->
+                        <div class="cancel-reasons">
+                            <h5 class="mb-3 text-center">סיבות אפשריות לביטול:</h5>
+                            
+                            <div class="reason-item">
+                                <i class="bi bi-person-x reason-icon"></i>
+                                <div class="reason-text">
+                                    <strong>ביטול מצד המשתמש</strong><br>
+                                    <small class="text-muted">בחרת לבטל את התשלום במהלך התהליך</small>
+                                </div>
+                            </div>
+                            
+                            <div class="reason-item">
+                                <i class="bi bi-credit-card-2-back reason-icon"></i>
+                                <div class="reason-text">
+                                    <strong>בעיה באמצעי התשלום</strong><br>
+                                    <small class="text-muted">ייתכן שחל עיכוב או בעיה זמנית עם כרטיס האשראי או PayPal</small>
+                                </div>
+                            </div>
+                            
+                            <div class="reason-item">
+                                <i class="bi bi-wifi-off reason-icon"></i>
+                                <div class="reason-text">
+                                    <strong>בעיית חיבור</strong><br>
+                                    <small class="text-muted">ייתכן שחל ניתוק מהאינטרנט או בעיה זמנית בשרת</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Help Section -->
+                        <div class="help-section">
+                            <div class="help-title">
+                                <i class="bi bi-lightbulb me-2"></i>
+                                מה אפשר לעשות?
+                            </div>
+                            
+                            <div class="help-item">
+                                <i class="bi bi-arrow-left-circle help-icon"></i>
+                                <span>נסה שוב - לעיתים בעיות זמניות נפתרות מיד</span>
+                            </div>
+                            
+                            <div class="help-item">
+                                <i class="bi bi-credit-card help-icon"></i>
+                                <span>בדוק את פרטי כרטיס האשראי או חשבון PayPal</span>
+                            </div>
+                            
+                            <div class="help-item">
+                                <i class="bi bi-wifi help-icon"></i>
+                                <span>ודא שיש חיבור יציב לאינטרנט</span>
+                            </div>
+                            
+                            <div class="help-item">
+                                <i class="bi bi-ticket-perforated help-icon"></i>
+                                <span>אם יש לך קופון תשלום, נסה להשתמש בו במקום</span>
+                            </div>
+                            
+                            <div class="help-item">
+                                <i class="bi bi-telephone help-icon"></i>
+                                <span>צור קשר עם הצוות שלנו לקבלת עזרה</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <a href="/payment" class="btn-retry">
+                                <i class="bi bi-arrow-clockwise me-2"></i>
+                                נסה שוב לשלם
+                            </a>
+                            <a href="/dashboard" class="btn-dashboard">
+                                <i class="bi bi-speedometer2 me-2"></i>
+                                חזור ללוח הבקרה
+                            </a>
+                        </div>
+                        
+                        <!-- Contact Info -->
+                        <div class="contact-info">
+                            <i class="bi bi-headset me-2"></i>
+                            <strong>זקוק לעזרה?</strong><br>
+                            צוות השירות שלנו זמין לעזור לך להשלים את התשלום.<br>
+                            צור קשר עמנו או נסה שוב מאוחר יותר.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Check if this is a specific payment cancellation
+    window.addEventListener('load', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('payment_id');
+        const reason = urlParams.get('reason');
+        
+        if (paymentId) {
+            console.log('Payment cancelled:', paymentId);
+            if (reason) {
+                console.log('Cancellation reason:', reason);
+            }
+        }
+        
+        // Optional: Track cancellation for analytics
+        // trackEvent('payment_cancelled', { payment_id: paymentId, reason: reason });
+    });
+    
+    // Auto-redirect after certain time (optional)
+    // setTimeout(function() {
+    //     if (confirm('האם תרצה לנסות שוב לשלם?')) {
+    //         window.location.href = '/payment';
+    //     }
+    // }, 30000); // 30 seconds
+</script>
+{% endblock %}

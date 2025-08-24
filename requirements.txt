@@ -26,6 +26,9 @@ email-validator==2.1.0
 httpx==0.25.2
 requests==2.31.0
 
+# PayPal SDK for payment processing
+paypalrestsdk==1.13.3
+
 # Date/Time handling and Hebrew Calendar
 python-dateutil==2.8.2
 pytz==2023.3
@@ -37,6 +40,7 @@ pillow==10.1.0
 python-magic==0.4.27
 aiofiles==23.2.1
 qrcode[pil]==7.4.2
+ffmpeg-python==0.2.0
 
 # Email services
 fastapi-mail==1.4.1

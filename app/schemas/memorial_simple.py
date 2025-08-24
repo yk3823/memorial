@@ -22,6 +22,13 @@ class MemorialBase(BaseModel):
     deceased_name_hebrew: str = Field(..., min_length=1, max_length=255, description="Hebrew name is required")
     deceased_name_english: Optional[str] = Field(None, max_length=255)
     parent_name_hebrew: str = Field(..., min_length=1, max_length=100, description="Parent name in Hebrew is required")
+    
+    # Family relationship fields (all optional)
+    spouse_name: Optional[str] = Field(None, max_length=200, description="Name of spouse/husband/wife in Hebrew (optional)")
+    children_names: Optional[str] = Field(None, max_length=1000, description="Names of children in Hebrew (optional)")
+    parents_names: Optional[str] = Field(None, max_length=300, description="Names of both parents in Hebrew (optional)")
+    family_names: Optional[str] = Field(None, max_length=1000, description="Names of family members or family groups in Hebrew (optional)")
+    
     birth_date_gregorian: Optional[date] = None
     birth_date_hebrew: Optional[str] = Field(None, max_length=50)
     death_date_gregorian: Optional[date] = None  # Made optional
@@ -41,6 +48,13 @@ class MemorialUpdate(BaseModel):
     deceased_name_hebrew: Optional[str] = Field(None, max_length=255)
     deceased_name_english: Optional[str] = Field(None, max_length=255)
     parent_name_hebrew: Optional[str] = Field(None, min_length=1, max_length=100)
+    
+    # Family relationship fields (all optional for updates)
+    spouse_name: Optional[str] = Field(None, max_length=200, description="Name of spouse/husband/wife in Hebrew (optional)")
+    children_names: Optional[str] = Field(None, max_length=1000, description="Names of children in Hebrew (optional)")
+    parents_names: Optional[str] = Field(None, max_length=300, description="Names of both parents in Hebrew (optional)")
+    family_names: Optional[str] = Field(None, max_length=1000, description="Names of family members or family groups in Hebrew (optional)")
+    
     birth_date_gregorian: Optional[date] = None
     birth_date_hebrew: Optional[str] = Field(None, max_length=50)
     death_date_gregorian: Optional[date] = None

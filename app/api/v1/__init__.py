@@ -5,7 +5,7 @@ Configures and combines all v1 API routes.
 
 from fastapi import APIRouter
 
-from . import auth, memorial, hebrew, photos, dashboard, files, subscription, qr_memorial
+from . import auth, memorial, hebrew, photos, dashboard, files, subscription, qr_memorial, payment, coupon
 
 # Create main API v1 router
 api_router = APIRouter()
@@ -19,6 +19,8 @@ api_router.include_router(subscription.router, prefix="/subscription")
 api_router.include_router(dashboard.router, prefix="/dashboard")
 api_router.include_router(hebrew.router)  # Hebrew endpoints already have /hebrew prefix
 api_router.include_router(qr_memorial.router)  # QR memorial endpoints
+api_router.include_router(payment.router)  # Payment endpoints
+api_router.include_router(coupon.router, prefix="/coupons", tags=["Coupons"])  # Coupon endpoints
 
 # Health check endpoint for API v1
 @api_router.get("/health", tags=["Health"])
@@ -44,6 +46,8 @@ async def api_info():
             "photos": "Photo upload and management with 6 photo types support",
             "dashboard": "Dashboard statistics and analytics in Hebrew",
             "qr-memorial": "QR code generation and tracking for memorial pages with manufacturing integration",
+            "payment": "PayPal payment integration for subscription management",
+            "coupons": "Manual payment coupon system for office payments",
             "users": "User management (coming soon)"
         },
         "documentation": "/docs",

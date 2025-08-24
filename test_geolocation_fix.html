@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Geolocation Fix</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5>בדיקת תיקון זיהוי מיקום</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">מיקום:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="location" placeholder="הזן כתובת או לחץ על הכפתור">
+                                <button type="button" class="btn btn-outline-primary" id="current-location-btn">
+                                    <i class="bi bi-geo-alt-fill me-1"></i>המיקום שלי
+                                </button>
+                            </div>
+                            <input type="hidden" id="location_lat" name="location_lat">
+                            <input type="hidden" id="location_lng" name="location_lng">
+                        </div>
+                        
+                        <div id="location-status" style="display: none;">
+                            <div class="alert alert-info" role="alert">
+                                <span id="location-status-text"></span>
+                            </div>
+                        </div>
+                        
+                        <div id="test-results" class="mt-3">
+                            <h6>תוצאות בדיקה:</h6>
+                            <ul class="list-group" id="test-list">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    תמיכה בזיהוי מיקום
+                                    <span class="badge" id="geolocation-support"></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    תמיכה ב-Permissions API
+                                    <span class="badge" id="permissions-support"></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    חיבור מאובטח (HTTPS)
+                                    <span class="badge" id="https-status"></span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    סטטוס הרשאה נוכחי
+                                    <span class="badge" id="permission-status">בודק...</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Test the geolocation fix
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentLocationBtn = document.getElementById('current-location-btn');
+            const locationInput = document.getElementById('location');
+            const locationLat = document.getElementById('location_lat');
+            const locationLng = document.getElementById('location_lng');
+            const locationStatus = document.getElementById('location-status');
+            const locationStatusText = document.getElementById('location-status-text');
+
+            // Run compatibility tests
+            runCompatibilityTests();
+
+            // Enhanced location detection (same as the fix)
+            currentLocationBtn.addEventListener('click', async function() {
+                // Check if geolocation is supported
+                if (!navigator.geolocation) {
+                    showError('הדפדפן שלך לא תומך בזיהוי מיקום');
+                    return;
+                }
+                
+                // Check if site is served over HTTPS (required for geolocation in production)
+                if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                    showError('זיהוי מיקום דורש חיבור מאובטח (HTTPS). אנא גש לאתר דרך https://');
+                    return;
+                }
+                
+                // Show loading state
+                const originalContent = currentLocationBtn.innerHTML;
+                currentLocationBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>בודק הרשאות...';
+                currentLocationBtn.disabled = true;
+                
+                try {
+                    // Check current permission state using Permissions API
+                    if ('permissions' in navigator) {
+                        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+                        
+                        if (permissionStatus.state === 'denied') {
+                            throw new Error('PERMISSION_DENIED_PERMANENTLY');
+                        } else if (permissionStatus.state === 'prompt') {
+                            // Show user-friendly message about permission request
+                            currentLocationBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>אנא אפשר גישה למיקום...';
+                            showLocationStatus('הדפדפן מבקש הרשאה לגישה למיקום. אנא לחץ "אפשר" בהודעה שתופיע.', 'info');
+                        }
+                    } else {
+                        // Fallback for older browsers
+                        currentLocationBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>מבקש הרשאת מיקום...';
+                        showLocationStatus('מבקש הרשאה לגישה למיקום...', 'info');
+                    }
+                    
+                    // Update loading message for actual location detection
+                    setTimeout(() => {
+                        currentLocationBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-1"></i>מזהה מיקום...';
+                    }, 1000);
+                    
+                    const position = await getCurrentPosition();
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    // Store coordinates
+                    locationLat.value = lat.toString();
+                    locationLng.value = lng.toString();
+                    locationInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    
+                    showLocationStatus(`מיקום זוהה בהצלחה! ${lat.toFixed(6)}, ${lng.toFixed(6)}`, 'success');
+                    
+                } catch (error) {
+                    console.error('Geolocation error:', error);
+                    let errorMessage = 'לא ניתן לזהות את המיקום';
+                    
+                    // Enhanced error handling based on error type and code
+                    if (error.message === 'PERMISSION_DENIED_PERMANENTLY') {
+                        errorMessage = 'הרשאת המיקום נחסמה לצמיתות. לאפשר מחדש: לחץ על סמל המנעול בכתובת האתר ← מיקום ← אפשר';
+                    } else if (error.code === 1) {
+                        // PERMISSION_DENIED
+                        if ('permissions' in navigator) {
+                            errorMessage = 'הרשאת מיקום נדחתה. לאפשר: לחץ על סמל המנעול בכתובת האתר ← מיקום ← אפשר, או רענן את הדף ונסה שוב';
+                        } else {
+                            errorMessage = 'אנא אפשר גישה למיקום בהגדרות הדפדפן ורענן את הדף';
+                        }
+                    } else if (error.code === 2) {
+                        // POSITION_UNAVAILABLE
+                        errorMessage = 'המיקום לא זמין כרגע. ודא שה-GPS מופעל או נסה שוב במיקום אחר';
+                    } else if (error.code === 3) {
+                        // TIMEOUT
+                        errorMessage = 'זיהוי המיקום לקח יותר מדי זמן. ודא שה-GPS מופעל ונסה שוב';
+                    }
+                    
+                    showLocationStatus(errorMessage, 'error');
+                    
+                } finally {
+                    // Restore button state
+                    currentLocationBtn.innerHTML = originalContent;
+                    currentLocationBtn.disabled = false;
+                }
+            });
+
+            // Enhanced getCurrentPosition function
+            function getCurrentPosition() {
+                return new Promise((resolve, reject) => {
+                    const options = {
+                        enableHighAccuracy: true,
+                        timeout: 15000, // 15 seconds - increased timeout for better reliability
+                        maximumAge: 60000 // 1 minute - shorter cache time for more accurate results
+                    };
+                    
+                    // Enhanced error handling wrapper
+                    function onSuccess(position) {
+                        // Validate position data
+                        if (position && position.coords && 
+                            typeof position.coords.latitude === 'number' && 
+                            typeof position.coords.longitude === 'number' &&
+                            !isNaN(position.coords.latitude) && 
+                            !isNaN(position.coords.longitude)) {
+                            resolve(position);
+                        } else {
+                            reject(new Error('Invalid position data received'));
+                        }
+                    }
+                    
+                    function onError(error) {
+                        // Add more context to the error
+                        console.error('Geolocation API error:', {
+                            code: error.code,
+                            message: error.message,
+                            timestamp: new Date().toISOString()
+                        });
+                        reject(error);
+                    }
+                    
+                    try {
+                        navigator.geolocation.getCurrentPosition(onSuccess, onError, options);
+                    } catch (error) {
+                        // Handle synchronous errors
+                        console.error('Synchronous geolocation error:', error);
+                        reject(error);
+                    }
+                });
+            }
+
+            function showLocationStatus(message, type) {
+                locationStatusText.textContent = message;
+                locationStatus.style.display = 'block';
+                
+                const alertDiv = locationStatus.querySelector('.alert');
+                alertDiv.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'}`;
+            }
+
+            function showError(message) {
+                showLocationStatus(message, 'error');
+            }
+
+            // Run compatibility tests
+            async function runCompatibilityTests() {
+                // Test geolocation support
+                const geolocationSupport = document.getElementById('geolocation-support');
+                if (navigator.geolocation) {
+                    geolocationSupport.textContent = 'נתמך';
+                    geolocationSupport.className = 'badge bg-success';
+                } else {
+                    geolocationSupport.textContent = 'לא נתמך';
+                    geolocationSupport.className = 'badge bg-danger';
+                }
+
+                // Test Permissions API support
+                const permissionsSupport = document.getElementById('permissions-support');
+                if ('permissions' in navigator) {
+                    permissionsSupport.textContent = 'נתמך';
+                    permissionsSupport.className = 'badge bg-success';
+                } else {
+                    permissionsSupport.textContent = 'לא נתמך';
+                    permissionsSupport.className = 'badge bg-warning';
+                }
+
+                // Test HTTPS status
+                const httpsStatus = document.getElementById('https-status');
+                if (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+                    httpsStatus.textContent = 'מאובטח';
+                    httpsStatus.className = 'badge bg-success';
+                } else {
+                    httpsStatus.textContent = 'לא מאובטח';
+                    httpsStatus.className = 'badge bg-danger';
+                }
+
+                // Test current permission status
+                const permissionStatusEl = document.getElementById('permission-status');
+                try {
+                    if ('permissions' in navigator && navigator.geolocation) {
+                        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' });
+                        
+                        switch (permissionStatus.state) {
+                            case 'granted':
+                                permissionStatusEl.textContent = 'מאושר';
+                                permissionStatusEl.className = 'badge bg-success';
+                                // Update button appearance
+                                currentLocationBtn.classList.add('btn-success');
+                                currentLocationBtn.classList.remove('btn-outline-primary');
+                                break;
+                            case 'denied':
+                                permissionStatusEl.textContent = 'נדחה';
+                                permissionStatusEl.className = 'badge bg-danger';
+                                currentLocationBtn.classList.add('btn-warning');
+                                currentLocationBtn.classList.remove('btn-outline-primary');
+                                break;
+                            case 'prompt':
+                                permissionStatusEl.textContent = 'יתבקש אישור';
+                                permissionStatusEl.className = 'badge bg-info';
+                                break;
+                            default:
+                                permissionStatusEl.textContent = 'לא ידוע';
+                                permissionStatusEl.className = 'badge bg-secondary';
+                        }
+                    } else {
+                        permissionStatusEl.textContent = 'לא זמין';
+                        permissionStatusEl.className = 'badge bg-secondary';
+                    }
+                } catch (error) {
+                    permissionStatusEl.textContent = 'שגיאה בבדיקה';
+                    permissionStatusEl.className = 'badge bg-warning';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
