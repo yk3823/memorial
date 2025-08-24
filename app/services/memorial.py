@@ -207,7 +207,7 @@ class MemorialService:
         db: AsyncSession,
         slug: str,
         include_photos: bool = False
-    ) -> Optional[Memorial]:
+    ) -> Optional[PublicMemorialResponse]:
         """
         Get public memorial by slug.
         
@@ -217,7 +217,7 @@ class MemorialService:
             include_photos: Whether to load photos
             
         Returns:
-            Optional[Memorial]: Memorial if found and public
+            Optional[PublicMemorialResponse]: Memorial response if found and public
         """
         try:
             query = (
@@ -231,24 +231,112 @@ class MemorialService:
                 )
             )
             
-            # Temporarily disable photo loading to isolate async issue
-            # if include_photos:
-            #     query = query.options(
-            #         selectinload(Memorial.photos.and_(Photo.is_deleted.is_(False)))
-            #     )
+            # Eagerly load photos to avoid lazy loading issues
+            if include_photos:
+                query = query.options(selectinload(Memorial.photos))
             
             result = await db.execute(query)
             memorial = result.scalar_one_or_none()
             
-            # Temporarily disable page view increment to isolate async issue
-            # if memorial:
-            #     memorial.page_views = (memorial.page_views or 0) + 1
-            #     await db.commit()
+            if not memorial:
+                return None
             
-            return memorial
+            # Extract all data while session is active
+            memorial_data = {
+                "id": memorial.id,
+                "owner_id": memorial.owner_id,
+                "deceased_name_hebrew": memorial.deceased_name_hebrew,
+                "deceased_name_english": memorial.deceased_name_english,
+                "birth_date_gregorian": memorial.birth_date_gregorian,
+                "birth_date_hebrew": memorial.birth_date_hebrew,
+                "death_date_gregorian": memorial.death_date_gregorian,
+                "death_date_hebrew": memorial.death_date_hebrew,
+                "biography": memorial.biography,
+                "memorial_song_url": memorial.memorial_song_url,
+                "unique_slug": memorial.unique_slug,
+                "yahrzeit_date_hebrew": memorial.yahrzeit_date_hebrew,
+                "next_yahrzeit_gregorian": memorial.next_yahrzeit_gregorian,
+                "page_views": memorial.page_views,
+                "created_at": memorial.created_at,
+                "updated_at": memorial.updated_at,
+                "is_locked": memorial.is_locked,
+                "is_public": memorial.is_public
+            }
+            
+            # Compute display properties safely without accessing hybrid properties
+            # display_name
+            if memorial.deceased_name_english:
+                memorial_data["display_name"] = f"{memorial.deceased_name_hebrew} ({memorial.deceased_name_english})"
+            else:
+                memorial_data["display_name"] = memorial.deceased_name_hebrew
+            
+            # age_at_death
+            if memorial.birth_date_gregorian and memorial.death_date_gregorian:
+                delta = memorial.death_date_gregorian - memorial.birth_date_gregorian
+                memorial_data["age_at_death"] = delta.days // 365
+            else:
+                memorial_data["age_at_death"] = None
+            
+            # public_url
+            if memorial.unique_slug and memorial.is_public:
+                memorial_data["public_url"] = f"/memorial/{memorial.unique_slug}"
+            else:
+                memorial_data["public_url"] = None
+            
+            # years_since_death
+            if memorial.death_date_gregorian:
+                from datetime import date
+                delta = date.today() - memorial.death_date_gregorian
+                memorial_data["years_since_death"] = delta.days // 365
+            else:
+                memorial_data["years_since_death"] = None
+            
+            # Build photos list while session is active
+            photos = []
+            primary_photo = None
+            if include_photos and memorial.photos:
+                for photo in memorial.photos:
+                    if not photo.is_deleted and photo.is_approved:
+                        photo_dict = {
+                            "id": photo.id,
+                            "memorial_id": photo.memorial_id,
+                            "filename": photo.original_filename,
+                            "original_filename": photo.original_filename,
+                            "file_path": photo.file_path,
+                            "thumbnail_path": f"/storage/photos/thumbs/{photo.original_filename}",  # Simple path
+                            "caption": photo.caption,
+                            "is_primary": photo.is_primary,
+                            "file_size": photo.file_size,
+                            "width": photo.width,
+                            "height": photo.height,
+                            "mime_type": photo.mime_type,
+                            "upload_date": photo.uploaded_at,
+                            "is_deleted": photo.is_deleted,
+                            "created_at": photo.created_at,
+                            "updated_at": photo.updated_at
+                        }
+                        photos.append(photo_dict)
+                        
+                        # Set primary photo
+                        if photo.is_primary:
+                            primary_photo = photo_dict
+            
+            # Increment page views
+            memorial.page_views = (memorial.page_views or 0) + 1
+            memorial_data["page_views"] = memorial.page_views
+            await db.commit()
+            
+            # Create the response after session operations are complete
+            return PublicMemorialResponse(
+                photos=photos,
+                primary_photo=primary_photo,
+                **memorial_data
+            )
             
         except Exception as e:
             logger.error(f"Failed to get memorial by slug {slug}: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return None
     
     async def get_user_memorials(
@@ -303,7 +391,7 @@ class MemorialService:
             
             if include_photos:
                 query = query.options(
-                    selectinload(Memorial.photos.and_(Photo.is_deleted.is_(False)))
+                    selectinload(Memorial.photos)
                 )
             
             result = await db.execute(query)

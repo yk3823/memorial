@@ -369,6 +369,13 @@
                         }
                     };
                     
+                    // Add JWT token if available (fallback to cookies)
+                    const token = localStorage.getItem('access_token');
+                    if (token) {
+                        defaultOptions.headers['Authorization'] = `Bearer ${token}`;
+                    }
+                    // Note: credentials: 'include' handles cookie authentication as fallback
+                    
                     // Don't set Content-Type for FormData - let browser set it
                     if (!(options.body instanceof FormData)) {
                         defaultOptions.headers['Content-Type'] = 'application/json';
@@ -561,6 +568,9 @@
                 }, 500);
             }
         };
+        
+        // Export to global scope
+        window.HebrewMemorialApp = HebrewMemorialApp;
         
         // Initialize app when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {

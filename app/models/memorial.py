@@ -223,6 +223,14 @@ class Memorial(BaseModel):
         lazy="select"
     )
     
+    qr_code: Mapped[Optional["QRMemorialCode"]] = relationship(
+        "QRMemorialCode",
+        back_populates="memorial",
+        lazy="select",
+        cascade="all, delete-orphan",
+        uselist=False
+    )
+    
     # Database indexes for performance
     __table_args__ = (
         Index("ix_memorial_owner_public", "owner_id", "is_public"),
@@ -464,7 +472,68 @@ class Memorial(BaseModel):
         data['photo_count'] = len([p for p in self.photos if not p.is_deleted]) if self.photos else 0
         data['contact_count'] = len([c for c in self.contacts if not c.is_deleted]) if self.contacts else 0
         
+        # Add QR code information
+        data['has_qr_code'] = bool(self.qr_code and self.qr_code.is_active)
+        data['qr_code_data'] = self.qr_code.to_dict() if self.qr_code else None
+        
         return data
+    
+    # QR Code management methods
+    def has_active_qr_code(self) -> bool:
+        """
+        Check if this memorial has an active QR code.
+        
+        Returns:
+            bool: True if memorial has active QR code
+        """
+        return bool(self.qr_code and self.qr_code.is_active and not self.qr_code.is_expired)
+    
+    def get_qr_url(self, base_url: str = "https://memorial.com") -> Optional[str]:
+        """
+        Get QR code URL for this memorial.
+        
+        Args:
+            base_url: Base URL for the site
+            
+        Returns:
+            str or None: QR URL if QR code exists and is active
+        """
+        if self.has_active_qr_code():
+            return self.qr_code.generate_qr_url(base_url)
+        return None
+    
+    def get_qr_analytics_summary(self) -> dict:
+        """
+        Get QR code analytics summary for this memorial.
+        
+        Returns:
+            dict: Analytics summary with scan counts and recent activity
+        """
+        if not self.qr_code:
+            return {
+                "has_qr_code": False,
+                "total_scans": 0,
+                "recent_scans": 0,
+                "last_scan_date": None
+            }
+        
+        # Count recent scans (last 30 days)
+        from datetime import datetime, timedelta
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        recent_scans = len([
+            scan for scan in self.qr_code.scan_events 
+            if scan.scanned_at > thirty_days_ago
+        ])
+        
+        return {
+            "has_qr_code": True,
+            "is_active": self.qr_code.is_active,
+            "total_scans": self.qr_code.total_scans,
+            "recent_scans": recent_scans,
+            "last_scan_date": self.qr_code.last_scan_at,
+            "order_status": self.qr_code.order_status_display,
+            "subscription_tier": self.qr_code.subscription_tier
+        }
 
 
 # Association table for memorial-psalm verse many-to-many relationship

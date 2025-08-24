@@ -483,8 +483,14 @@ async def he_login_form(
     # Create tokens
     token_data = auth_service.create_token_pair(str(user.id))
     
-    # Create redirect response
-    response = RedirectResponse(url="/he/dashboard", status_code=302)
+    # Create redirect response with JWT tokens in query params (temporary solution)
+    # This allows the frontend to capture and store the tokens
+    import urllib.parse
+    token_params = urllib.parse.urlencode({
+        'access_token': token_data['access_token'],
+        'refresh_token': token_data['refresh_token']
+    })
+    response = RedirectResponse(url=f"/he/dashboard?{token_params}", status_code=302)
     
     # Set secure authentication cookies with proper configuration
     access_token_max_age = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60  # Convert to seconds

@@ -862,60 +862,8 @@ async def get_public_memorial(
                 detail="Memorial not found or not public"
             )
         
-        # Convert to public response schema
-        # Temporarily disable photo processing to isolate async issue
-        photos = []
-        primary_photo = None
-        
-        # Compute hybrid properties manually to avoid async issues
-        display_name = memorial.deceased_name_hebrew or "ללא שם"
-        if memorial.deceased_name_english:
-            display_name = f"{memorial.deceased_name_hebrew} ({memorial.deceased_name_english})"
-        
-        age_at_death = None
-        if memorial.birth_date_gregorian and memorial.death_date_gregorian:
-            delta = memorial.death_date_gregorian - memorial.birth_date_gregorian
-            age_at_death = delta.days // 365
-        
-        public_url = None
-        if memorial.unique_slug and memorial.is_public:
-            public_url = f"/memorial/{memorial.unique_slug}"
-        
-        years_since_death = None
-        if memorial.death_date_gregorian:
-            from datetime import date
-            delta = date.today() - memorial.death_date_gregorian
-            years_since_death = delta.days // 365
-
-        memorial_response = PublicMemorialResponse(
-            id=memorial.id,
-            owner_id=memorial.owner_id,
-            deceased_name_hebrew=memorial.deceased_name_hebrew,
-            deceased_name_english=memorial.deceased_name_english,
-            birth_date_gregorian=memorial.birth_date_gregorian,
-            birth_date_hebrew=memorial.birth_date_hebrew,
-            death_date_gregorian=memorial.death_date_gregorian,
-            death_date_hebrew=memorial.death_date_hebrew,
-            yahrzeit_date_hebrew=memorial.yahrzeit_date_hebrew,
-            next_yahrzeit_gregorian=memorial.next_yahrzeit_gregorian,
-            biography=memorial.biography,
-            memorial_song_url=memorial.memorial_song_url,
-            is_locked=memorial.is_locked,
-            is_public=memorial.is_public,
-            page_views=memorial.page_views,
-            unique_slug=memorial.unique_slug,
-            created_at=memorial.created_at,
-            updated_at=memorial.updated_at,
-            display_name=display_name,
-            age_at_death=age_at_death,
-            public_url=public_url,
-            years_since_death=years_since_death,
-            photos=photos,
-            primary_photo=primary_photo
-        )
-        
         logger.info(f"Public memorial {slug} retrieved successfully")
-        return memorial_response
+        return memorial
         
     except HTTPException:
         raise

@@ -52,17 +52,17 @@ class Settings(BaseSettings):
         raise ValueError(v)
     
     # Database Configuration
-    DATABASE_URL: str = "postgresql+asyncpg://memorial_user:memorial_pass_123@localhost:5432/memorial_db"
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:memorial123@localhost:5432/memorial_website_db"
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
-    DB_USER: str = "memorial_user"
-    DB_PASSWORD: str = "memorial_pass_123"
-    DB_NAME: str = "memorial_db"
+    DB_USER: str = "postgres"
+    DB_PASSWORD: str = "memorial123"
+    DB_NAME: str = "memorial_website_db"
     
     POSTGRES_SERVER: str = Field(default="localhost", env="POSTGRES_SERVER")
-    POSTGRES_USER: str = Field(default="memorial_user", env="POSTGRES_USER")
-    POSTGRES_PASSWORD: str = Field(default="memorial_pass_123", env="POSTGRES_PASSWORD")
-    POSTGRES_DB: str = Field(default="memorial_db", env="POSTGRES_DB")
+    POSTGRES_USER: str = Field(default="postgres", env="POSTGRES_USER")
+    POSTGRES_PASSWORD: str = Field(default="memorial123", env="POSTGRES_PASSWORD")
+    POSTGRES_DB: str = Field(default="memorial_website_db", env="POSTGRES_DB")
     POSTGRES_PORT: str = Field(default="5432", env="POSTGRES_PORT")
     
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None

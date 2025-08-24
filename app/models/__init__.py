@@ -14,6 +14,7 @@ from .contact import Contact, ContactType
 from .notification import Notification, NotificationType, NotificationStatus
 from .location import Location
 from .psalm_119 import Psalm119Letter, Psalm119Verse
+from .qr_memorial import QRMemorialCode, QRScanEvent, ManufacturingPartner, QROrderStatus, QRDesignTemplate
 
 # Import existing models if they exist
 try:
@@ -43,6 +44,9 @@ __all__ = [
     "Location",
     "Psalm119Letter",
     "Psalm119Verse",
+    "QRMemorialCode",
+    "QRScanEvent", 
+    "ManufacturingPartner",
     
     # Enums
     "UserRole",
@@ -50,6 +54,8 @@ __all__ = [
     "ContactType",
     "NotificationType",
     "NotificationStatus",
+    "QROrderStatus",
+    "QRDesignTemplate",
     
     # Association tables
     "memorial_psalm_verses",
@@ -65,6 +71,9 @@ MODELS = {
     "Location": Location,
     "Psalm119Letter": Psalm119Letter,
     "Psalm119Verse": Psalm119Verse,
+    "QRMemorialCode": QRMemorialCode,
+    "QRScanEvent": QRScanEvent,
+    "ManufacturingPartner": ManufacturingPartner,
 }
 
 # Enum registry
@@ -74,6 +83,8 @@ ENUMS = {
     "ContactType": ContactType,
     "NotificationType": NotificationType,
     "NotificationStatus": NotificationStatus,
+    "QROrderStatus": QROrderStatus,
+    "QRDesignTemplate": QRDesignTemplate,
 }
 
 
@@ -140,6 +151,7 @@ MODEL_RELATIONSHIPS = {
         "notifications": "One-to-many with Notification",
         "location": "One-to-one with Location",
         "psalm_verses": "Many-to-many with Psalm119Verse",
+        "qr_code": "One-to-one with QRMemorialCode",
     },
     
     "Photo": {
@@ -171,6 +183,21 @@ MODEL_RELATIONSHIPS = {
     "Psalm119Verse": {
         "letter": "Many-to-one with Psalm119Letter",
     },
+    
+    "QRMemorialCode": {
+        "memorial": "One-to-one with Memorial",
+        "manufacturing_partner": "Many-to-one with ManufacturingPartner",
+        "scan_events": "One-to-many with QRScanEvent",
+    },
+    
+    "QRScanEvent": {
+        "qr_code": "Many-to-one with QRMemorialCode",
+    },
+    
+    "ManufacturingPartner": {
+        "qr_orders": "One-to-many with QRMemorialCode",
+    },
+    
 }
 
 
