@@ -247,27 +247,23 @@
         <!-- שלב 2: הודעת פסוקים -->
         <div class="row justify-content-center" id="verse-info-section" style="display: none;">
             <div class="col-lg-8">
-                <div class="card shadow-sm mb-4 border-info">
-                    <div class="card-header bg-info text-white">
-                        <h3 class="card-title mb-0 hebrew-title">
-                            <i class="bi bi-book me-2"></i>פסוקי תהילים קיט
-                        </h3>
+                <div class="neshama-section memorial-shadow-medium">
+                    <div class="neshama-title">
+                        <i class="bi bi-book me-2 memorial-candle-glow"></i>פסוקי תהילים קיט
                     </div>
-                    <div class="card-body">
-                        <div class="text-center">
-                            <i class="bi bi-info-circle display-4 text-info mb-3"></i>
-                            <h4 class="hebrew-title text-info">פסוקים יתווספו לאחר יצירת ההנצחה</h4>
-                            <p class="lead hebrew-text">
-                                הפסוקים המתאימים לשם העברי 
-                                <strong class="text-primary" id="selected-name-display"></strong>
-                                יופיעו בדף ההנצחה הסופי
+                    <div class="text-center">
+                        <i class="bi bi-star-of-david display-3 text-memorial-gold mb-4 memorial-candle-glow"></i>
+                        <div class="neshama-subtitle">פסוקים יתווספו לאחר יצירת ההנצחה</div>
+                        <p class="memorial-body-text">
+                            הפסוקים המתאימים לשם העברי 
+                            <strong class="text-memorial-gold" id="selected-name-display"></strong>
+                            יופיעו בדף ההנצחה הסופי
+                        </p>
+                        <div class="neshama-verse">
+                            <p class="memorial-body-text mb-0">
+                                <i class="bi bi-lightbulb me-2 text-memorial-gold"></i>
+                                הפסוקים יבחרו אוטומטית לפי האותיות בשם העברי ויכללו גם פסוקי נשמה
                             </p>
-                            <div class="alert alert-light border-info">
-                                <p class="hebrew-text mb-0">
-                                    <i class="bi bi-lightbulb me-2"></i>
-                                    הפסוקים יבחרו אוטומטית לפי האותיות בשם העברי ויכללו גם פסוקי נשמה
-                                </p>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -277,11 +273,12 @@
         <!-- שלב 3: תמונות וסרטון -->
         <div class="row justify-content-center">
             <div class="col-lg-8">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-success text-white">
+                <div class="memorial-card memorial-shadow-medium mb-4">
+                    <div class="card-header" style="background: linear-gradient(135deg, var(--memorial-sage) 0%, #7da68a 100%); color: var(--memorial-cream); border-bottom: 3px solid var(--memorial-gold);">
                         <h3 class="card-title mb-0 hebrew-title">
-                            <i class="bi bi-camera me-2"></i>תמונות וסרטון
+                            <i class="bi bi-camera me-2 memorial-candle-glow"></i>תמונות וסרטון
                         </h3>
+                        <p class="mb-0 mt-2 opacity-75" style="font-size: 0.95em;">זכרונות בתמונה, סרטון ומיקום לשמירת זכרו</p>
                     </div>
                     <div class="card-body">
                         <!-- Photo Upload Section -->
@@ -473,15 +470,21 @@
         </div>
 
         <!-- כפתורי פעולה -->
-        <div class="row justify-content-center">
+        <div class="row justify-content-center memorial-section">
             <div class="col-lg-8">
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <button type="button" class="btn btn-outline-secondary hebrew-text" id="save-draft">
+                <div class="text-center mb-4">
+                    <p class="memorial-body-text text-memorial-slate">לאחר יצירת ההנצחה, תוכל לחזור ולערוך אותה בכל עת</p>
+                </div>
+                <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+                    <button type="button" class="btn btn-primary hebrew-text memorial-shadow-soft" id="save-draft">
                         <i class="bi bi-file-earmark me-2"></i>שמור כטיוטה
                     </button>
-                    <button type="submit" class="btn btn-success btn-lg hebrew-text">
-                        <i class="bi bi-check-circle me-2"></i>צור הנצחה
+                    <button type="submit" class="btn btn-memorial btn-lg hebrew-text memorial-shadow-medium">
+                        <i class="bi bi-heart-fill me-2 memorial-candle-glow"></i>צור הנצחה נצחית
                     </button>
+                </div>
+                <div class="text-center mt-4">
+                    <small class="text-memorial-ash memorial-ui-text">"זכר צדיק לברכה" - ההנצחה תישמר לעולם</small>
                 </div>
             </div>
         </div>
@@ -491,11 +494,13 @@
     <div class="modal fade" id="mapPickerModal" tabindex="-1" aria-labelledby="mapPickerModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title hebrew-title" id="mapPickerModalLabel">בחר מיקום במפה</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header" style="background: linear-gradient(135deg, var(--memorial-navy) 0%, var(--memorial-stone) 100%); color: var(--memorial-cream); border-bottom: 2px solid var(--memorial-gold);">
+                    <h5 class="modal-title hebrew-title text-memorial-gold" id="mapPickerModalLabel">
+                        <i class="bi bi-geo-alt-fill me-2 memorial-candle-glow"></i>בחר מיקום במפה
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body bg-memorial-cream">
                     <div class="mb-3">
                         <p class="hebrew-text">לחץ על המפה כדי לבחור מיקום, או חפש כתובת:</p>
                         <div class="input-group mb-3">
@@ -528,9 +533,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary hebrew-text" data-bs-dismiss="modal">ביטול</button>
-                    <button type="button" class="btn btn-primary hebrew-text" id="select-location-btn">בחר מיקום זה</button>
+                <div class="modal-footer bg-memorial-cream">
+                    <button type="button" class="btn btn-primary hebrew-text memorial-shadow-soft" data-bs-dismiss="modal">ביטול</button>
+                    <button type="button" class="btn btn-memorial hebrew-text memorial-shadow-soft" id="select-location-btn">בחר מיקום זה</button>
                 </div>
             </div>
         </div>

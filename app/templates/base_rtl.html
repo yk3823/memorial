@@ -11,10 +11,12 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     
-    <!-- Hebrew fonts from Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Memorial Hebrew fonts from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Hebrew:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=David+Libre:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Custom Hebrew RTL CSS -->
     <link href="/static/css/hebrew_rtl.css" rel="stylesheet">
@@ -42,12 +44,12 @@
     
     {% block extra_css %}{% endblock %}
 </head>
-<body class="bg-light hebrew-text">
+<body class="bg-memorial-cream hebrew-text memorial-gentle-rise">
     <!-- Header Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm sticky-top">
         <div class="container">
             <a class="navbar-brand hebrew-title" href="/he">
-                <i class="bi bi-heart-fill me-2"></i>
+                <i class="bi bi-heart-fill me-2 memorial-candle-glow"></i>
                 זכר לדורות
             </a>
             
@@ -168,14 +170,15 @@
     <!-- Main Content -->
     <main class="container my-4" role="main">
         {% block content %}
-        <div class="text-center py-5 hebrew-text fade-in-rtl">
-            <h1 class="display-4 hebrew-title mb-4">ברוכים הבאים לאתר ההנצחה</h1>
-            <p class="lead">לכבוד זכרם של יקירינו - עם פסוקי תהילים קיט</p>
+        <div class="text-center py-5 hebrew-text fade-in-rtl memorial-section">
+            <h1 class="memorial-title-large mb-4 memorial-candle-glow">ברוכים הבאים לאתר ההנצחה</h1>
+            <p class="memorial-subtitle mb-4">לכבוד זכרם של יקירינו - עם פסוקי תהילים קיט</p>
+            <p class="memorial-body-text text-memorial-slate mb-5">"זכר צדיק לברכה" - נצור זכרון נצחי עם פסוקי תהילים המתאימים לשם העברי</p>
             <div class="mt-4">
-                <a href="/he/memorial/new" class="btn btn-primary btn-lg me-3">
+                <a href="/he/memorial/new" class="btn btn-memorial btn-lg me-3 memorial-shadow-soft">
                     <i class="bi bi-plus-circle me-2"></i>צור הנצחה חדשה
                 </a>
-                <a href="/he/search" class="btn btn-outline-secondary btn-lg">
+                <a href="/he/search" class="btn btn-primary btn-lg memorial-shadow-soft">
                     <i class="bi bi-search me-2"></i>חפש הנצחות
                 </a>
             </div>
@@ -184,14 +187,14 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-dark text-light py-4 mt-5 hebrew-text footer">
+    <footer class="text-light py-4 mt-5 hebrew-text footer">
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
                     <h5 class="hebrew-title">זכר לדורות</h5>
                     <p class="small mb-2">אתר הנצחה יהודי עם פסוקי תהילים קיט</p>
-                    <p class="small mb-0 text-muted">
-                        <i class="bi bi-book me-1"></i>
+                    <p class="small mb-0 text-memorial-gold">
+                        <i class="bi bi-book me-1 memorial-candle-glow"></i>
                         "זכר צדיק לברכה" - משלי י:ז
                     </p>
                 </div>
@@ -214,12 +217,12 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <div class="d-flex align-items-center">
-                        <i class="bi bi-heart-fill text-danger me-2"></i>
-                        <small class="text-muted">תהילים קיט - הפרק הארוך ביותר בתנ"ך עם 176 פסוקים</small>
+                        <i class="bi bi-heart-fill text-memorial-gold me-2 memorial-candle-glow"></i>
+                        <small class="text-memorial-cream">תהילים קיט - הפרק הארוך ביותר בתנ"ך עם 176 פסוקים</small>
                     </div>
                 </div>
                 <div class="col-md-6 text-end">
-                    <small class="text-muted">
+                    <small class="text-memorial-cream">
                         <i class="bi bi-code-slash me-1"></i>
                         פותח בטכנולוגיות מודרניות עם תמיכה מלאה בעברית RTL
                     </small>
