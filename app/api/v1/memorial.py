@@ -54,6 +54,9 @@ from app.schemas.memorial_simple import (
 )
 from app.models.user import User
 from app.models.memorial import Memorial
+from app.models.photo import Photo
+from app.schemas.photo import PhotoResponse
+from sqlalchemy import select
 
 logger = logging.getLogger(__name__)
 
@@ -1088,5 +1091,118 @@ async def update_memorial_slug(
             detail="Failed to update slug"
         )
 
+
+
+@router.get("/public/{slug}", response_model=MemorialWithPhotos)
+async def get_public_memorial(
+    slug: Annotated[str, Path(..., description="Memorial unique slug")],
+    db: Annotated[AsyncSession, Depends(get_db)],
+    memorial_service: Annotated[MemorialService, Depends(get_memorial_service)]
+) -> MemorialWithPhotos:
+    """
+    Get public memorial information by slug.
+    
+    Returns memorial data with embedded photos for public viewing.
+    Memorial must be marked as public.
+    """
+    try:
+        logger.info(f"Getting public memorial by slug: {slug}")
+        
+        # Get memorial by slug
+        memorial_query = select(Memorial).where(
+            Memorial.unique_slug == slug,
+            Memorial.is_public == True,
+            Memorial.is_deleted == False
+        )
+        result = await db.execute(memorial_query)
+        memorial = result.scalar_one_or_none()
+        
+        if not memorial:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Memorial not found or not public"
+            )
+        
+        # Get photos
+        photos_query = select(Photo).where(
+            Photo.memorial_id == memorial.id,
+            Photo.is_approved == True
+        ).order_by(Photo.display_order)
+        
+        photos_result = await db.execute(photos_query)
+        photos = photos_result.scalars().all()
+        
+        # Convert photos to response format
+        photo_responses = []
+        for photo in photos:
+            photo_responses.append(PhotoResponse(
+                id=photo.id,
+                memorial_id=photo.memorial_id,
+                file_path=photo.file_path,
+                file_url=photo.file_url,
+                original_filename=photo.original_filename,
+                photo_type=photo.photo_type,
+                caption=photo.caption,
+                display_order=photo.display_order,
+                is_primary=photo.is_primary,
+                is_approved=photo.is_approved,
+                uploaded_at=photo.uploaded_at,
+                created_at=photo.created_at,
+                updated_at=photo.updated_at,
+                display_name=photo.display_name,
+                file_size=photo.file_size,
+                mime_type=photo.mime_type,
+                width=photo.width,
+                height=photo.height,
+                is_processed=photo.is_processed,
+                processing_error=photo.processing_error,
+                uploaded_by_user_id=photo.uploaded_by_user_id
+            ))
+        
+        # Convert to dictionary and add photos
+        memorial_dict = {
+            'id': memorial.id,
+            'owner_id': memorial.owner_id,
+            'deceased_name_hebrew': memorial.deceased_name_hebrew,
+            'deceased_name_english': memorial.deceased_name_english,
+            'parent_name_hebrew': memorial.parent_name_hebrew,
+            'spouse_name': memorial.spouse_name,
+            'children_names': memorial.children_names,
+            'parents_names': memorial.parents_names,
+            'family_names': memorial.family_names,
+            'birth_date_gregorian': memorial.birth_date_gregorian,
+            'death_date_gregorian': memorial.death_date_gregorian,
+            'birth_date_hebrew': memorial.birth_date_hebrew,
+            'death_date_hebrew': memorial.death_date_hebrew,
+            'biography': memorial.biography,
+            'memorial_song_url': memorial.memorial_song_url,
+            'is_public': memorial.is_public,
+            'is_locked': memorial.is_locked,
+            'enable_comments': memorial.enable_comments,
+            'page_views': memorial.page_views,
+            'unique_slug': memorial.unique_slug,
+            'yahrzeit_date_hebrew': memorial.yahrzeit_date_hebrew,
+            'next_yahrzeit_gregorian': memorial.next_yahrzeit_gregorian,
+            'created_at': memorial.created_at,
+            'updated_at': memorial.updated_at,
+            'photos': photo_responses
+        }
+        
+        response = MemorialWithPhotos(**memorial_dict)
+        
+        # Update page views
+        memorial.page_views = (memorial.page_views or 0) + 1
+        await db.commit()
+        
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get public memorial {slug}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve memorial"
+        )
 
 # Error handlers would be registered at the FastAPI app level, not router level

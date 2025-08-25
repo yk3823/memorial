@@ -426,7 +426,7 @@ async function loadMemorial(slug) {
         console.log('Loading memorial for slug:', slug);
         
         // Try the API endpoint first
-        const response = await fetch(`/api/v1/memorials/${slug}/public`);
+        const response = await fetch(`/api/v1/memorials/public/${slug}`);
         
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
