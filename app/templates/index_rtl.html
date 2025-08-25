@@ -400,10 +400,15 @@ document.addEventListener('DOMContentLoaded', function() {
             nameSections.forEach((section) => {
                 html += `
                     <div class="section-container mb-4">
-                        <h6 class="section-title hebrew-title">
-                            ${section.section_title}
-                            <span class="badge bg-primary ms-2">${section.verse_count} פסוקים</span>
-                        </h6>
+                        <div class="letter-section-header p-3 mb-3 bg-primary text-white rounded">
+                            <h5 class="mb-0 hebrew-title d-flex align-items-center justify-content-between">
+                                <span>
+                                    <span class="display-6">${section.letter.hebrew_letter}</span>
+                                    <span class="ms-3">${section.letter.hebrew_name}</span>
+                                </span>
+                                <span class="badge bg-white text-primary">${section.verse_count} פסוקים</span>
+                            </h5>
+                        </div>
                 `;
                 
                 // Display ALL verses in this section
@@ -429,10 +434,15 @@ document.addEventListener('DOMContentLoaded', function() {
             neshamaSections.forEach((section) => {
                 html += `
                     <div class="section-container mb-4">
-                        <h6 class="section-title hebrew-title">
-                            ${section.section_title}
-                            <span class="badge bg-success ms-2">${section.verse_count} פסוקים</span>
-                        </h6>
+                        <div class="letter-section-header p-3 mb-3 bg-success text-white rounded">
+                            <h5 class="mb-0 hebrew-title d-flex align-items-center justify-content-between">
+                                <span>
+                                    <span class="display-6">${section.letter.hebrew_letter}</span>
+                                    <span class="ms-3">${section.letter.hebrew_name}</span>
+                                </span>
+                                <span class="badge bg-white text-success">${section.verse_count} פסוקים</span>
+                            </h5>
+                        </div>
                 `;
                 
                 // Display ALL verses in this neshama section - same format as name verses
@@ -466,13 +476,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Create verse card HTML
     function createVerseCard(verse, index, letterInfo) {
         const verseReference = verse.verse_reference || `תהילים קיט:${verse.verse_number || '?'}`;
-        const hebrewLetter = letterInfo ? letterInfo.hebrew_letter : (verse.letter ? verse.letter.hebrew_letter : '?');
         
         return `
             <div class="verse-container mb-3">
                 <div class="verse-header">
                     <div class="verse-reference">${verseReference}</div>
-                    <div class="hebrew-letter-indicator">${hebrewLetter}</div>
                 </div>
                 ${createVerseContent(verse)}
                 ${verse.selection_reason ? `

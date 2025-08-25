@@ -43,7 +43,7 @@
 
     /* Hebrew verses styling */
     .verse-section {
-        margin-bottom: 2.5rem;
+        margin-bottom: 1.2rem;
         border-radius: 1rem;
         border: 2px solid #e9ecef;
         overflow: hidden;
@@ -75,7 +75,7 @@
     .verse-container {
         background: white;
         border-bottom: 1px solid #e9ecef;
-        padding: 1.5rem;
+        padding: 0.8rem 1rem;
         transition: background-color 0.3s ease;
     }
     
@@ -527,6 +527,17 @@ function displayMemorial(memorial) {
     // Photos
     displayPhotos(memorial.photos || []);
     
+    // Set profile photo if available
+    if (memorial.photos && memorial.photos.length > 0) {
+        const profilePhoto = memorial.photos.find(p => p.is_primary) || memorial.photos[0];
+        if (profilePhoto) {
+            const memorialPhotoElement = document.getElementById('memorialPhoto');
+            if (memorialPhotoElement) {
+                memorialPhotoElement.src = profilePhoto.file_url || profilePhoto.file_path;
+            }
+        }
+    }
+    
     // Show memorial
     loadingSpinner.classList.add('d-none');
     memorialTemplate.classList.remove('d-none');
@@ -576,11 +587,15 @@ async function loadMemorialVerses() {
         const versesData = await response.json();
         console.log('Verses loaded:', versesData);
         
+        // Separate sections into name sections and neshama sections
+        const nameSections = versesData.sections ? versesData.sections.filter(s => !s.is_neshama) : [];
+        const neshamaSections = versesData.sections ? versesData.sections.filter(s => s.is_neshama) : [];
+        
         // Display name verses
-        if (versesData.name_sections && versesData.name_sections.length > 0) {
+        if (nameSections.length > 0) {
             let nameVersesHtml = '';
             
-            versesData.name_sections.forEach(section => {
+            nameSections.forEach(section => {
                 nameVersesHtml += createVerseSectionHtml(section, false);
             });
             
@@ -590,10 +605,10 @@ async function loadMemorialVerses() {
         }
         
         // Display neshama verses
-        if (versesData.neshama_sections && versesData.neshama_sections.length > 0) {
+        if (neshamaSections.length > 0) {
             let neshamaVersesHtml = '';
             
-            versesData.neshama_sections.forEach(section => {
+            neshamaSections.forEach(section => {
                 neshamaVersesHtml += createVerseSectionHtml(section, true);
             });
             
@@ -656,9 +671,9 @@ function displayPhotos(photos) {
     gallery.innerHTML = photos.map(photo => `
         <div class="col-md-4 col-sm-6">
             <div class="card">
-                <img src="${photo.file_path}" alt="${photo.caption || 'תמונת הנצחה'}" 
+                <img src="${photo.file_url || photo.file_path}" alt="${photo.caption || 'תמונת הנצחה'}" 
                      class="card-img-top" style="height: 200px; object-fit: cover;"
-                     onclick="showPhotoModal('${photo.file_path}', '${photo.caption || ''}')">
+                     onclick="showPhotoModal('${photo.file_url || photo.file_path}', '${photo.caption || ''}')">
                 ${photo.caption ? `<div class="card-body"><p class="card-text small hebrew-text">${photo.caption}</p></div>` : ''}
             </div>
         </div>
