@@ -23,6 +23,12 @@ class MemorialBase(BaseModel):
     deceased_name_english: Optional[str] = Field(None, max_length=255)
     parent_name_hebrew: str = Field(..., min_length=1, max_length=100, description="Parent name in Hebrew is required")
     
+    # First and last names (optional for backward compatibility)
+    hebrew_first_name: Optional[str] = Field(None, min_length=1, max_length=100, description="First name in Hebrew")
+    hebrew_last_name: Optional[str] = Field(None, min_length=1, max_length=100, description="Last name in Hebrew")
+    english_first_name: Optional[str] = Field(None, max_length=100)
+    english_last_name: Optional[str] = Field(None, max_length=100)
+    
     # Family relationship fields (all optional)
     spouse_name: Optional[str] = Field(None, max_length=200, description="Name of spouse/husband/wife in Hebrew (optional)")
     children_names: Optional[str] = Field(None, max_length=1000, description="Names of children in Hebrew (optional)")
@@ -35,12 +41,22 @@ class MemorialBase(BaseModel):
     death_date_hebrew: Optional[str] = Field(None, max_length=50)
     biography: Optional[str] = Field(None, max_length=10000)
     memorial_song_url: Optional[HttpUrl] = None
+    unique_slug: Optional[str] = Field(None, max_length=100)
     is_public: bool = Field(default=False)
+    enable_comments: bool = Field(default=False)
+    yahrzeit_first_year_custom: int = Field(default=3, ge=1, le=3, description="Yahrzeit calculation custom: 1=Sephardic (11 months first year), 2=Ashkenazi (12 months), 3=General (12 months)")
+    location: Optional[str] = Field(None, max_length=500)
+    location_lat: Optional[float] = Field(None, ge=-90, le=90)
+    location_lng: Optional[float] = Field(None, ge=-180, le=180)
+    whatsapp_phones: Optional[List[str]] = Field(None, max_length=5)
+    notification_emails: Optional[List[str]] = Field(None, max_length=5)
 
 
 class MemorialCreate(MemorialBase):
     """Schema for creating a new memorial."""
-    pass
+    # Override to make first and last names required for new memorials
+    hebrew_first_name: str = Field(..., min_length=1, max_length=100, description="First name in Hebrew is required")
+    hebrew_last_name: str = Field(..., min_length=1, max_length=100, description="Last name in Hebrew is required")
 
 
 class MemorialUpdate(BaseModel):
@@ -62,6 +78,13 @@ class MemorialUpdate(BaseModel):
     biography: Optional[str] = Field(None, max_length=10000)
     memorial_song_url: Optional[HttpUrl] = None
     is_public: Optional[bool] = None
+    enable_comments: Optional[bool] = None
+    yahrzeit_first_year_custom: Optional[int] = Field(None, ge=1, le=3, description="Yahrzeit calculation custom: 1=Sephardic (11 months first year), 2=Ashkenazi (12 months), 3=General (12 months)")
+    location: Optional[str] = Field(None, max_length=500)
+    location_lat: Optional[float] = Field(None, ge=-90, le=90)
+    location_lng: Optional[float] = Field(None, ge=-180, le=180)
+    whatsapp_phones: Optional[List[str]] = Field(None, max_length=5)
+    notification_emails: Optional[List[str]] = Field(None, max_length=5)
 
 
 class MemorialResponse(MemorialBase):

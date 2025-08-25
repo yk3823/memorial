@@ -239,6 +239,7 @@ async def create_memorial_with_files(
     location_lng: Annotated[Optional[str], Form()] = None,
     is_public: Annotated[Optional[str], Form()] = None,
     enable_comments: Annotated[Optional[str], Form()] = None,
+    yahrzeit_first_year_custom: Annotated[Optional[str], Form()] = None,
     whatsapp_phones: Annotated[Optional[str], Form()] = None,
     notification_emails: Annotated[Optional[str], Form()] = None,
     
@@ -337,6 +338,17 @@ async def create_memorial_with_files(
             except json.JSONDecodeError:
                 pass
         
+        # Parse yahrzeit custom selection
+        yahrzeit_custom_parsed = 3  # Default to "כללי" (General)
+        if yahrzeit_first_year_custom:
+            try:
+                yahrzeit_custom_parsed = int(yahrzeit_first_year_custom)
+                # Validate range (1=Sephardic, 2=Ashkenazi, 3=General)
+                if yahrzeit_custom_parsed not in [1, 2, 3]:
+                    yahrzeit_custom_parsed = 3
+            except ValueError:
+                yahrzeit_custom_parsed = 3
+
         # Create memorial data object
         memorial_data = MemorialCreate(
             hebrew_first_name=hebrew_first_name,
@@ -359,6 +371,7 @@ async def create_memorial_with_files(
             unique_slug=unique_slug,
             is_public=is_public == 'true' if is_public else True,
             enable_comments=enable_comments == 'true' if enable_comments else False,
+            yahrzeit_first_year_custom=yahrzeit_custom_parsed,
             location=location,
             location_lat=lat_parsed,
             location_lng=lng_parsed,

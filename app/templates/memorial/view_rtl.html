@@ -436,7 +436,7 @@ async function loadMemorial(slug) {
         currentMemorial = memorial;
         console.log('Memorial loaded:', memorial);
         
-        displayMemorial(memorial);
+        await displayMemorial(memorial);
         
     } catch (error) {
         console.error('Failed to load memorial:', error);
@@ -445,7 +445,7 @@ async function loadMemorial(slug) {
     }
 }
 
-function displayMemorial(memorial) {
+async function displayMemorial(memorial) {
     const loadingSpinner = document.getElementById('loadingSpinner');
     const memorialTemplate = document.getElementById('memorialTemplate');
     
@@ -498,17 +498,8 @@ function displayMemorial(memorial) {
         hebrewDeathDateElement.textContent = memorial.death_date_hebrew;
     }
     
-    // Next yahrzeit
-    const nextYahrzeitElement = document.getElementById('nextYahrzeit');
-    if (memorial.next_yahrzeit_gregorian) {
-        const nextYahrzeit = new Date(memorial.next_yahrzeit_gregorian);
-        const today = new Date();
-        const daysUntil = Math.ceil((nextYahrzeit - today) / (1000 * 60 * 60 * 24));
-        nextYahrzeitElement.textContent = 
-            `${formatHebrewDate(memorial.next_yahrzeit_gregorian)} (בעוד ${daysUntil} ימים)`;
-    } else {
-        nextYahrzeitElement.textContent = 'לא חושב';
-    }
+    // Calculate and display next yahrzeit with Hebrew calendar rules
+    await calculateAndDisplayYahrzeit(memorial);
     
     // Memorial media
     if (memorial.memorial_song_url) {
@@ -721,6 +712,171 @@ function shareMemorial() {
             document.body.removeChild(textArea);
             alert('הקישור הועתק ללוח');
         });
+    }
+}
+
+async function calculateAndDisplayYahrzeit(memorial) {
+    const nextYahrzeitElement = document.getElementById('nextYahrzeit');
+    
+    // Show loading state
+    nextYahrzeitElement.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>מחשב יארצייט...';
+    
+    try {
+        // Check if we have the required Hebrew death date
+        if (!memorial.death_date_hebrew) {
+            nextYahrzeitElement.textContent = 'תאריך פטירה עברי לא זמין';
+            return;
+        }
+        
+        // Use the new memorial-specific yahrzeit endpoint
+        // This will use the memorial's custom yahrzeit settings
+        const response = await fetch(`/api/v1/hebrew/yahrzeit/memorial/${memorial.id || memorial.unique_slug}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const memorial_info = data.memorial || {};
+            const customName = memorial_info.custom_name || "כללי";
+            const isFirstYear = data.is_first_year;
+            
+            // Check if this is Sephardic custom with dual dates
+            if (data.is_sephardic && data.azkara && data.yahrzeit) {
+                // Display both Azkara and Yahrzeit for Sephardic custom
+                const azkara = data.azkara;
+                const yahrzeit = data.yahrzeit;
+                
+                let displayHtml = `
+                    <div class="yahrzeit-info">
+                        <div class="custom-info mb-3">
+                            <small class="text-muted hebrew-text">
+                                <i class="bi bi-gear-fill me-1"></i>
+                                מנהג: ${customName}
+                            </small>
+                        </div>
+                `;
+                
+                // Azkara section (11 months)
+                displayHtml += `
+                    <div class="memorial-date-section mb-3 p-3 border rounded" style="background-color: #f8f9fa;">
+                        <h6 class="hebrew-text mb-2" style="color: #6610f2;">
+                            <i class="bi bi-calendar-heart me-1"></i>
+                            אזכרה שנה ראשונה (11 חודשים)
+                        </h6>
+                        <div class="hebrew-date mb-2">
+                            <strong class="hebrew-text">${azkara.hebrew_date.formatted}</strong>
+                        </div>
+                        <div class="gregorian-date mb-2">
+                            <small class="text-muted">תאריך לועזי: ${azkara.gregorian_formatted.full}</small>
+                        </div>
+                        <div class="days-until">
+                            <span class="badge ${azkara.days_until <= 7 ? 'bg-warning' : 'bg-primary'} hebrew-text">
+                                ${azkara.days_until > 0 ? `בעוד ${azkara.days_until} ימים` : azkara.days_until === 0 ? 'היום!' : 'עבר'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+                
+                // Yahrzeit section (12 months)
+                displayHtml += `
+                    <div class="memorial-date-section mb-3 p-3 border rounded" style="background-color: #f0f8ff;">
+                        <h6 class="hebrew-text mb-2" style="color: #0d6efd;">
+                            <i class="bi bi-calendar-x me-1"></i>
+                            יארצייט (12 חודשים)
+                        </h6>
+                        <div class="hebrew-date mb-2">
+                            <strong class="hebrew-text">${yahrzeit.hebrew_date.formatted}</strong>
+                        </div>
+                        <div class="gregorian-date mb-2">
+                            <small class="text-muted">תאריך לועזי: ${yahrzeit.gregorian_formatted.full}</small>
+                        </div>
+                        <div class="days-until">
+                            <span class="badge ${yahrzeit.days_until <= 7 ? 'bg-warning' : 'bg-info'} hebrew-text">
+                                ${yahrzeit.days_until > 0 ? `בעוד ${yahrzeit.days_until} ימים` : yahrzeit.days_until === 0 ? 'היום!' : 'עבר'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+                
+                if (isFirstYear) {
+                    displayHtml += `
+                        <div class="first-year-notice mt-2">
+                            <small class="text-info hebrew-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                ספרדים מציינים שני תאריכים: אזכרה ב-11 חודשים ויארצייט ב-12 חודשים
+                            </small>
+                        </div>
+                    `;
+                }
+                
+                displayHtml += '</div>';
+                nextYahrzeitElement.innerHTML = displayHtml;
+                
+            } else if (data.yahrzeit) {
+                // Regular display for Ashkenazi and General customs
+                const yahrzeit = data.yahrzeit;
+                
+                // Format the display
+                const hebrewDate = yahrzeit.hebrew_date.formatted;
+                const gregorianDate = yahrzeit.gregorian_formatted.full;
+                const daysUntil = yahrzeit.days_until;
+                const monthsCalculated = yahrzeit.months_calculated || 12;
+                
+                // Create the display HTML
+                let displayHtml = `
+                    <div class="yahrzeit-info">
+                        <div class="hebrew-date mb-2">
+                            <strong class="hebrew-text">${hebrewDate}</strong>
+                        </div>
+                        <div class="gregorian-date mb-2">
+                            <small class="text-muted">תאריך לועזי: ${gregorianDate}</small>
+                        </div>
+                        <div class="days-until mb-2">
+                            <span class="badge ${daysUntil <= 7 ? 'bg-warning' : 'bg-info'} hebrew-text">
+                                ${daysUntil > 0 ? `בעוד ${daysUntil} ימים` : daysUntil === 0 ? 'היום!' : 'עבר'}
+                            </span>
+                        </div>
+                        <div class="custom-info mt-2">
+                            <small class="text-muted hebrew-text">
+                                <i class="bi bi-gear-fill me-1"></i>
+                                מנהג: ${customName} (${monthsCalculated} חודשים)
+                            </small>
+                        </div>
+                `;
+                
+                // Add first year indicator if applicable
+                if (isFirstYear) {
+                    displayHtml += `
+                        <div class="first-year-notice mt-2">
+                            <small class="text-info hebrew-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                יארצייט ראשון - ${customName}
+                            </small>
+                        </div>
+                    `;
+                }
+                
+                displayHtml += '</div>';
+                nextYahrzeitElement.innerHTML = displayHtml;
+            } else {
+                nextYahrzeitElement.textContent = 'נתוני יארצייט לא זמינים';
+            }
+        } else {
+            nextYahrzeitElement.textContent = 'שגיאה בחישוב יארצייט';
+        }
+        
+    } catch (error) {
+        console.error('Error calculating yahrzeit:', error);
+        nextYahrzeitElement.innerHTML = `
+            <div class="text-danger">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                שגיאה בחישוב יארצייט
+                <br><small>אנא נסה שנית מאוחר יותר</small>
+            </div>
+        `;
     }
 }
 

@@ -84,8 +84,11 @@ class HebrewDate:
         Raises:
             ValueError: If date string cannot be parsed
         """
+        # Clean up the input string
+        cleaned_string = cls._clean_hebrew_date_string(date_string)
+        
         # This is a simplified parser - in production would need more robust parsing
-        parts = date_string.split()
+        parts = cleaned_string.split()
         if len(parts) >= 3:
             try:
                 day = int(parts[0])
@@ -113,6 +116,105 @@ class HebrewDate:
                 raise ValueError(f"Invalid Hebrew date format: {date_string}") from e
         
         raise ValueError(f"Invalid Hebrew date format: {date_string}")
+    
+    @classmethod
+    def _clean_hebrew_date_string(cls, date_string: str) -> str:
+        """
+        Clean Hebrew date string by removing vowels, punctuation, and converting Hebrew numerals.
+        
+        Args:
+            date_string: Raw Hebrew date string
+            
+        Returns:
+            str: Cleaned date string in format "day month year"
+        """
+        import re
+        
+        # Remove Hebrew vowels (niqqud)
+        vowels = '[\u05B0-\u05C7]'
+        cleaned = re.sub(vowels, '', date_string)
+        
+        # Remove Hebrew punctuation marks
+        punctuation = '[״׳]'
+        cleaned = re.sub(punctuation, '', cleaned)
+        
+        # Hebrew numerals mapping (common ones)
+        hebrew_numerals = {
+            'א': 1, 'ב': 2, 'ג': 3, 'ד': 4, 'ה': 5, 'ו': 6, 'ז': 7, 'ח': 8, 'ט': 9,
+            'י': 10, 'כ': 20, 'ל': 30, 'מ': 40, 'נ': 50, 'ס': 60, 'ע': 70, 'פ': 80, 'צ': 90,
+            'ק': 100, 'ר': 200, 'ש': 300, 'ת': 400
+        }
+        
+        # Special Hebrew numerals combinations
+        special_numerals = {
+            'טו': 15, 'טז': 16,  # 15 and 16 (not יה and יו for religious reasons)
+            'כט': 29, 'ל': 30,
+        }
+        
+        # Hebrew month names mapping
+        month_mapping = {
+            'תשרי': 'Tishrei',
+            'חשון': 'Cheshvan', 'חשוון': 'Cheshvan', 'מרחשון': 'Cheshvan',
+            'כסלו': 'Kislev', 'כסלה': 'Kislev',
+            'טבת': 'Tevet',
+            'שבט': 'Shevat',
+            'אדר': 'Adar', 'אדרא': 'Adar', 'אדרב': 'Adar II',
+            'ניסן': 'Nissan',
+            'אייר': 'Iyar',
+            'סיון': 'Sivan', 'סיוון': 'Sivan',
+            'תמוז': 'Tamuz',
+            'אב': 'Av', 'אבא': 'Av', 'מנאב': 'Av',
+            'אלול': 'Elul'
+        }
+        
+        # Hebrew year prefixes
+        hebrew_years = {
+            'תש': 5700, 'תשע': 5770, 'תשף': 5780, 'תשפ': 5780, 'תשצ': 5790,
+            'תשפא': 5781, 'תשפב': 5782, 'תשפג': 5783, 'תשפד': 5784, 'תשפה': 5785
+        }
+        
+        # Split into parts
+        parts = cleaned.split()
+        result_parts = []
+        
+        for part in parts:
+            # Try to convert Hebrew numerals to Arabic numerals
+            if re.match(r'^[א-ת]+$', part):
+                # Check if it's a year prefix
+                year_converted = False
+                for prefix, base_year in hebrew_years.items():
+                    if part.startswith(prefix):
+                        remaining = part[len(prefix):]
+                        if remaining:
+                            additional = sum(hebrew_numerals.get(char, 0) for char in remaining)
+                            result_parts.append(str(base_year + additional))
+                            year_converted = True
+                            break
+                
+                if not year_converted:
+                    # Check if it's a month name FIRST (before numeral conversion)
+                    month_found = False
+                    for heb_month, eng_month in month_mapping.items():
+                        if heb_month == part or heb_month in part or part in heb_month:
+                            result_parts.append(eng_month)
+                            month_found = True
+                            break
+                    
+                    if not month_found:
+                        # Check special numerals
+                        if part in special_numerals:
+                            result_parts.append(str(special_numerals[part]))
+                        else:
+                            # Try to convert as regular Hebrew numeral
+                            numeral_value = sum(hebrew_numerals.get(char, 0) for char in part)
+                            if numeral_value > 0:
+                                result_parts.append(str(numeral_value))
+                            else:
+                                result_parts.append(part)
+            else:
+                result_parts.append(part)
+        
+        return ' '.join(result_parts)
     
     @staticmethod
     def _is_hebrew_leap_year(year: int) -> bool:
@@ -387,17 +489,26 @@ class HebrewCalendarService:
     async def get_next_yahrzeit(
         self,
         death_date_hebrew: Union[HebrewDate, str],
-        from_date: Optional[date] = None
-    ) -> Tuple[date, HebrewDate]:
+        death_date_gregorian: Optional[date] = None,
+        from_date: Optional[date] = None,
+        yahrzeit_custom: int = 3
+    ) -> Tuple[date, HebrewDate, bool]:
         """
         Get the next yahrzeit (anniversary) date in Gregorian calendar.
         
+        Yahrzeit rules based on custom:
+        - yahrzeit_custom = 1 (Sephardic): First year = 11 months, subsequent = 12 months
+        - yahrzeit_custom = 2 (Ashkenazi): Always 12 months 
+        - yahrzeit_custom = 3 (General): Always 12 months
+        
         Args:
             death_date_hebrew: Hebrew date of death
+            death_date_gregorian: Gregorian date of death (for determining first year)
             from_date: Date to calculate from (default: today)
+            yahrzeit_custom: Custom rule (1=Sephardic, 2=Ashkenazi, 3=General)
             
         Returns:
-            Tuple[date, HebrewDate]: Next yahrzeit in Gregorian and Hebrew calendars
+            Tuple[date, HebrewDate, bool]: Next yahrzeit in Gregorian, Hebrew calendars, and is_first_year
             
         Raises:
             DateConversionError: If calculation fails
@@ -408,14 +519,41 @@ class HebrewCalendarService:
         if not from_date:
             from_date = date.today()
         
-        # Calculate yahrzeit Hebrew date
-        yahrzeit_hebrew = await self.calculate_yahrzeit_date(death_date_hebrew)
+        # If no gregorian death date provided, try to get it from hebrew date
+        if not death_date_gregorian and death_date_hebrew:
+            try:
+                death_date_gregorian = await self.hebrew_to_gregorian(death_date_hebrew)
+            except DateConversionError:
+                death_date_gregorian = from_date  # Fallback
         
-        # Try current Gregorian year first
+        # Determine if this is the first year
+        is_first_year = False
+        if death_date_gregorian:
+            # Check if we're within the first Hebrew year (approximately 13 months)
+            first_yahrzeit_cutoff = death_date_gregorian + timedelta(days=380)  # ~13 months
+            is_first_year = from_date <= first_yahrzeit_cutoff
+        
+        # Calculate yahrzeit Hebrew date based on custom rules
+        if is_first_year and yahrzeit_custom == 1:
+            # Sephardic custom: First year = 11 Hebrew months from death
+            yahrzeit_hebrew = await self._add_hebrew_months(death_date_hebrew, 11)
+        else:
+            # All other cases: 12 months (same Hebrew date annually)
+            # This covers: Ashkenazi, General, or subsequent years for Sephardic
+            yahrzeit_hebrew = HebrewDate(
+                day=death_date_hebrew.day,
+                month=death_date_hebrew.month,
+                year=death_date_hebrew.year,  # Will be updated for specific year calculations
+                formatted=f"{death_date_hebrew.day} {death_date_hebrew.month.value} (יארצייט)",
+                is_leap_year=death_date_hebrew.is_leap_year,
+                days_in_month=death_date_hebrew.days_in_month
+            )
+        
+        # Convert to Gregorian date for current/next year
         current_year = from_date.year
         
         try:
-            # Try current year
+            # Try current year first
             yahrzeit_gregorian = await self.hebrew_to_gregorian(
                 yahrzeit_hebrew,
                 target_year=current_year
@@ -427,8 +565,10 @@ class HebrewCalendarService:
                     yahrzeit_hebrew,
                     target_year=current_year + 1
                 )
+                # Update Hebrew date year to match the calculated year
+                yahrzeit_hebrew = await self.gregorian_to_hebrew(yahrzeit_gregorian)
             
-            return yahrzeit_gregorian, yahrzeit_hebrew
+            return yahrzeit_gregorian, yahrzeit_hebrew, is_first_year
         
         except DateConversionError:
             # Fallback: try next year
@@ -436,8 +576,185 @@ class HebrewCalendarService:
                 yahrzeit_hebrew,
                 target_year=current_year + 1
             )
+            # Update Hebrew date year to match the calculated year
+            yahrzeit_hebrew = await self.gregorian_to_hebrew(yahrzeit_gregorian)
             
-            return yahrzeit_gregorian, yahrzeit_hebrew
+            return yahrzeit_gregorian, yahrzeit_hebrew, is_first_year
+    
+    async def get_sephardic_memorial_dates(
+        self,
+        death_date_hebrew: Union[HebrewDate, str],
+        death_date_gregorian: Optional[date] = None,
+        from_date: Optional[date] = None
+    ) -> Dict[str, Any]:
+        """
+        Get both Azkara (11 months) and Yahrzeit (12 months) dates for Sephardic custom.
+        
+        Sephardic Jews observe two separate dates in the first year:
+        1. אזכרה (Azkara) - Memorial at 11 Hebrew months
+        2. יארצייט (Yahrzeit) - Anniversary at 12 Hebrew months (same Hebrew date annually)
+        
+        Args:
+            death_date_hebrew: Hebrew date of death
+            death_date_gregorian: Gregorian date of death (for determining first year)
+            from_date: Date to calculate from (default: today)
+            
+        Returns:
+            Dict with both Azkara and Yahrzeit information
+        """
+        if isinstance(death_date_hebrew, str):
+            death_date_hebrew = HebrewDate.from_string(death_date_hebrew)
+        
+        if not from_date:
+            from_date = date.today()
+        
+        # If no gregorian death date provided, try to get it from hebrew date
+        if not death_date_gregorian and death_date_hebrew:
+            try:
+                death_date_gregorian = await self.hebrew_to_gregorian(death_date_hebrew)
+            except DateConversionError:
+                death_date_gregorian = from_date  # Fallback
+        
+        # Determine if this is the first year
+        is_first_year = False
+        if death_date_gregorian:
+            # Check if we're within the first Hebrew year (approximately 13 months)
+            first_yahrzeit_cutoff = death_date_gregorian + timedelta(days=380)  # ~13 months
+            is_first_year = from_date <= first_yahrzeit_cutoff
+        
+        result = {
+            "is_first_year": is_first_year,
+            "death_date_hebrew": death_date_hebrew,
+            "death_date_gregorian": death_date_gregorian
+        }
+        
+        try:
+            # Calculate Azkara (11 months) - always calculated for Sephardic
+            azkara_hebrew = await self._add_hebrew_months(death_date_hebrew, 11)
+            current_year = from_date.year
+            
+            # Convert Azkara to Gregorian
+            azkara_gregorian = await self.hebrew_to_gregorian(
+                azkara_hebrew,
+                target_year=current_year
+            )
+            
+            # If Azkara has passed this year, get next year's date
+            if azkara_gregorian <= from_date:
+                azkara_gregorian = await self.hebrew_to_gregorian(
+                    azkara_hebrew,
+                    target_year=current_year + 1
+                )
+            
+            # Calculate days until Azkara
+            days_until_azkara = (azkara_gregorian - from_date).days
+            
+            result["azkara"] = {
+                "gregorian_date": azkara_gregorian.isoformat(),
+                "hebrew_date": {
+                    "formatted": f"{self.format_hebrew_date(azkara_hebrew, style='hebrew')} (אזכרה)",
+                    "day": azkara_hebrew.day,
+                    "month": azkara_hebrew.month.value,
+                    "year": azkara_hebrew.year,
+                    "is_leap_year": azkara_hebrew.is_leap_year
+                },
+                "days_until": days_until_azkara,
+                "gregorian_formatted": {
+                    "hebrew": f"{azkara_gregorian.day}/{azkara_gregorian.month}/{azkara_gregorian.year}",
+                    "full": azkara_gregorian.strftime("%d/%m/%Y")
+                },
+                "months_calculated": 11
+            }
+            
+            # Calculate Yahrzeit (12 months / same Hebrew date annually)
+            yahrzeit_hebrew = HebrewDate(
+                day=death_date_hebrew.day,
+                month=death_date_hebrew.month,
+                year=death_date_hebrew.year,  # Will be updated for specific year calculations
+                formatted=f"{death_date_hebrew.day} {death_date_hebrew.month.value} (יארצייט)",
+                is_leap_year=death_date_hebrew.is_leap_year,
+                days_in_month=death_date_hebrew.days_in_month
+            )
+            
+            # Convert Yahrzeit to Gregorian
+            yahrzeit_gregorian = await self.hebrew_to_gregorian(
+                yahrzeit_hebrew,
+                target_year=current_year
+            )
+            
+            # If Yahrzeit has passed this year, get next year's date
+            if yahrzeit_gregorian <= from_date:
+                yahrzeit_gregorian = await self.hebrew_to_gregorian(
+                    yahrzeit_hebrew,
+                    target_year=current_year + 1
+                )
+            
+            # Calculate days until Yahrzeit
+            days_until_yahrzeit = (yahrzeit_gregorian - from_date).days
+            
+            result["yahrzeit"] = {
+                "gregorian_date": yahrzeit_gregorian.isoformat(),
+                "hebrew_date": {
+                    "formatted": f"{self.format_hebrew_date(yahrzeit_hebrew, style='hebrew')} (יארצייט)",
+                    "day": yahrzeit_hebrew.day,
+                    "month": yahrzeit_hebrew.month.value,
+                    "year": yahrzeit_hebrew.year,
+                    "is_leap_year": yahrzeit_hebrew.is_leap_year
+                },
+                "days_until": days_until_yahrzeit,
+                "gregorian_formatted": {
+                    "hebrew": f"{yahrzeit_gregorian.day}/{yahrzeit_gregorian.month}/{yahrzeit_gregorian.year}",
+                    "full": yahrzeit_gregorian.strftime("%d/%m/%Y")
+                },
+                "months_calculated": 12
+            }
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error calculating Sephardic memorial dates: {e}")
+            raise DateConversionError(f"Failed to calculate Sephardic memorial dates: {e}") from e
+    
+    async def _add_hebrew_months(self, hebrew_date: HebrewDate, months: int) -> HebrewDate:
+        """
+        Add months to a Hebrew date.
+        
+        Args:
+            hebrew_date: Starting Hebrew date
+            months: Number of months to add
+            
+        Returns:
+            HebrewDate: New date with months added
+        """
+        # This is a simplified implementation
+        # In practice, you'd need to handle Hebrew calendar complexities
+        new_month_index = list(HebrewMonth).index(hebrew_date.month) + months
+        new_year = hebrew_date.year
+        
+        # Handle year overflow
+        while new_month_index >= 13:  # Assuming max 13 months in leap year
+            new_month_index -= 12  # Regular year has 12 months
+            new_year += 1
+            # Check if new year is leap year and adjust accordingly
+            if HebrewDate._is_hebrew_leap_year(new_year):
+                if new_month_index >= 13:
+                    new_month_index -= 1
+        
+        while new_month_index < 0:
+            new_month_index += 12
+            new_year -= 1
+        
+        # Get the month enum
+        hebrew_months = list(HebrewMonth)
+        new_month = hebrew_months[min(new_month_index, len(hebrew_months) - 1)]
+        
+        return HebrewDate(
+            day=hebrew_date.day,
+            month=new_month,
+            year=new_year,
+            formatted=f"{hebrew_date.day} {new_month.value} {new_year}",
+            is_leap_year=HebrewDate._is_hebrew_leap_year(new_year)
+        )
     
     async def get_hebrew_date_info(
         self,
@@ -530,13 +847,77 @@ class HebrewCalendarService:
                 "error": str(e)
             }
     
+    def _number_to_hebrew(self, number: int, is_year: bool = False) -> str:
+        """Convert number to Hebrew numeral representation."""
+        if number <= 0:
+            return str(number)
+        
+        # For Hebrew years, use abbreviated form (last 3 digits)
+        if is_year and number > 5000:
+            # Extract last 3 digits for Hebrew year abbreviation
+            last_digits = number % 1000
+            return self._convert_small_number_to_hebrew(last_digits)
+        else:
+            return self._convert_small_number_to_hebrew(number)
+    
+    def _convert_small_number_to_hebrew(self, number: int) -> str:
+        """Convert small numbers (under 1000) to Hebrew numerals."""
+        if number <= 0:
+            return str(number)
+        
+        # Hebrew numerals mapping
+        hebrew_numerals = [
+            (400, 'ת'), (300, 'ש'), (200, 'ר'), (100, 'ק'),
+            (90, 'צ'), (80, 'פ'), (70, 'ע'), (60, 'ס'), (50, 'נ'), 
+            (40, 'מ'), (30, 'ל'), (20, 'כ'), (19, 'יט'), (18, 'יח'),
+            (17, 'יז'), (16, 'טז'), (15, 'טו'), (10, 'י'),
+            (9, 'ט'), (8, 'ח'), (7, 'ז'), (6, 'ו'), (5, 'ה'),
+            (4, 'ד'), (3, 'ג'), (2, 'ב'), (1, 'א')
+        ]
+        
+        result = ""
+        remaining = number
+        
+        for value, letter in hebrew_numerals:
+            if remaining >= value:
+                count = remaining // value
+                result += letter * count
+                remaining -= value * count
+        
+        # Add geresh (׳) for single letter or gershayim (״) for multiple letters
+        if len(result) == 1:
+            result += '׳'
+        elif len(result) > 1:
+            result = result[:-1] + '״' + result[-1]
+            
+        return result
+    
+    def _get_hebrew_month_name(self, month: HebrewMonth) -> str:
+        """Get Hebrew name for month."""
+        hebrew_months = {
+            HebrewMonth.TISHREI: 'תשרי',
+            HebrewMonth.CHESHVAN: 'חשון', 
+            HebrewMonth.KISLEV: 'כסלו',
+            HebrewMonth.TEVET: 'טבת',
+            HebrewMonth.SHEVAT: 'שבט',
+            HebrewMonth.ADAR: 'אדר',
+            HebrewMonth.ADAR_II: 'אדר ב׳',
+            HebrewMonth.NISSAN: 'ניסן',
+            HebrewMonth.IYAR: 'אייר',
+            HebrewMonth.SIVAN: 'סיון',
+            HebrewMonth.TAMUZ: 'תמוז',
+            HebrewMonth.AV: 'אב',
+            HebrewMonth.ELUL: 'אלול'
+        }
+        return hebrew_months.get(month, month.value)
+    
     def format_hebrew_date(self, hebrew_date: HebrewDate, style: str = "full") -> str:
         """
         Format Hebrew date for display.
         
         Args:
             hebrew_date: Hebrew date to format
-            style: Format style ('full', 'short', 'numeric')
+            style: Format style ('full', 'short', 'numeric', 'hebrew')
             
         Returns:
             str: Formatted Hebrew date
@@ -545,6 +926,12 @@ class HebrewCalendarService:
             return f"{hebrew_date.day}/{hebrew_date.month.value}/{hebrew_date.year}"
         elif style == "short":
             return f"{hebrew_date.day} {hebrew_date.month.value[:3]} {hebrew_date.year}"
+        elif style == "hebrew":
+            # Full Hebrew format with Hebrew numerals
+            day_hebrew = self._number_to_hebrew(hebrew_date.day)
+            month_hebrew = self._get_hebrew_month_name(hebrew_date.month)
+            year_hebrew = self._number_to_hebrew(hebrew_date.year, is_year=True)
+            return f"{day_hebrew} {month_hebrew} {year_hebrew}"
         else:  # full
             return hebrew_date.formatted
     

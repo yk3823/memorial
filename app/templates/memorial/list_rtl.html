@@ -183,26 +183,42 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             showLoadingState();
             
+            console.log('Making API call to /memorials/my...');
             const response = await HebrewMemorialApp.apiCall('/memorials/my');
+            console.log('Raw API response:', response);
+            console.log('Response type:', typeof response);
+            console.log('Response keys:', response ? Object.keys(response) : 'null');
             
             // Handle different response formats
             if (response.items) {
                 memorials = response.items;
+                console.log('Using response.items, count:', response.items.length);
             } else if (response.memorials) {
                 memorials = response.memorials;
+                console.log('Using response.memorials, count:', response.memorials.length);
             } else if (Array.isArray(response)) {
                 memorials = response;
+                console.log('Using array response, count:', response.length);
             } else {
                 memorials = [];
+                console.log('No valid memorial data found, setting empty array');
             }
             
             hideLoadingState();
-            console.log('Loaded memorials:', memorials);
+            console.log('Final memorials array:', memorials);
             console.log('Number of memorials:', memorials.length);
             filterAndDisplayMemorials();
             
         } catch (error) {
             console.error('API Error:', error);
+            console.error('Error type:', typeof error);
+            console.error('Error message:', error.message);
+            console.error('Error stack:', error.stack);
+            
+            // Check authentication status
+            const token = localStorage.getItem('access_token');
+            console.log('localStorage access_token:', token ? 'exists' : 'missing');
+            
             hideLoadingState();
             
             // Handle different error types
@@ -233,10 +249,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Filter and display memorials
     function filterAndDisplayMemorials() {
+        console.log('filterAndDisplayMemorials called with:', memorials.length, 'memorials');
         let filteredMemorials = [...memorials];
         
         // Search filter
         const searchTerm = searchInput.value.trim().toLowerCase();
+        console.log('Search term:', searchTerm);
         if (searchTerm) {
             filteredMemorials = filteredMemorials.filter(memorial => {
                 return memorial.deceased_name_hebrew.toLowerCase().includes(searchTerm) ||
@@ -292,10 +310,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Display memorials
     function displayMemorials(memorialsArray) {
+        console.log('displayMemorials called with:', memorialsArray.length, 'memorials');
+        console.log('Memorials to display:', memorialsArray);
+        
         if (memorialsArray.length === 0) {
+            console.log('No memorials to display, showing empty state');
             showEmptyState();
             return;
         }
+        
+        console.log('Will render', memorialsArray.length, 'memorials');
         
         hideEmptyState();
         

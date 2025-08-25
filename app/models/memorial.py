@@ -188,6 +188,14 @@ class Memorial(BaseModel):
         comment="Email addresses for notifications (JSON array)"
     )
     
+    # Yahrzeit calculation settings
+    yahrzeit_first_year_custom: Mapped[int] = mapped_column(
+        Integer,
+        default=3,  # 3 = General (כללי)
+        nullable=False,
+        comment="First year yahrzeit calculation custom: 1=Sephardic (11 months), 2=Ashkenazi (12 months), 3=General (12 months)"
+    )
+    
     # Analytics
     page_views: Mapped[int] = mapped_column(
         Integer,
